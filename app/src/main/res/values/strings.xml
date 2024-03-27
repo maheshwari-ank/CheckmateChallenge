@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Checkmate Challenge</string>
+    <string name="hint_button">Hint</string>
+</resources>
