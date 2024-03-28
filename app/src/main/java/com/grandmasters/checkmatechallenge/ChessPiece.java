@@ -52,4 +52,17 @@ public class ChessPiece {
         this.pieceType = pieceType;
         this.resId = resId;
     }
+
+    // Copy constructor
+    public ChessPiece(ChessPiece other) {
+        this.row = other.row;
+        this.col = other.col;
+        this.player = other.player;
+        this.pieceType = other.pieceType;
+        this.resId = other.resId;
+    }
+
+    public ChessPiece copy() {
+        return new ChessPiece(this);
+    }
 }
