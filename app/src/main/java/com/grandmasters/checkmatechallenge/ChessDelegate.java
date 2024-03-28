@@ -8,4 +8,10 @@ public interface ChessDelegate {
     void movePiece(int fromCol, int fromRow, int toCol, int toRow);
 
     Set<ChessPiece> getPiecesBox();
+
+    int getRows();
+
+    int getColumns();
+
+    void setPiecesBoxOriginalState(Set<ChessPiece> piecesBoxOriginalState);
 }

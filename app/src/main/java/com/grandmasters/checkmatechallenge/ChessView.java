@@ -6,23 +6,29 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.graphics.*;
+
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.HashSet;
 public class ChessView extends View {
+    private ChessDelegate chessDelegate;
+    private Paint paint;
+    private int rows;
+    private int cols;
+    private float cellSize;
+    private int selectedCol;
+    private int selectedRow;
+    private Boolean pieceSelected;
     private float margin;
     private Canvas canvas;
-    private float cellSize;
     private float boardTop;
     private float boardLeft;
     private float boardWidth;
@@ -30,22 +36,14 @@ public class ChessView extends View {
     private static final String TAG = "ChessView";
     private final Set<Integer> imgResIds = new HashSet<>();
     private final Map<Integer, Bitmap> bitmaps = new HashMap<>();
-    private final Paint paint = new Paint();
     private float availableWidth;
     private float availableHeight;
-    private ChessDelegate chessDelegate;
-
-    private int selectedCol;
-    private int selectedRow;
-    private Boolean pieceSelected;
-    public void setChessDelegate(ChessDelegate chessDelegate) {
-        this.chessDelegate = chessDelegate;
-    }
-
-    public ChessView(Context context, @Nullable AttributeSet attrs) {
+    public ChessView(Context context, AttributeSet attrs) {
         super(context, attrs);
         getImgResIds();
         loadBitmaps();
+        paint = new Paint();
+
         this.selectedCol = -1;
         this.selectedRow = -1;
     }
@@ -70,54 +68,88 @@ public class ChessView extends View {
     private void loadBitmaps() {
         imgResIds.forEach(it -> bitmaps.put(it, BitmapFactory.decodeResource(getResources(), it)));
     }
+    public void setChessDelegate(ChessDelegate chessDelegate) {
+        this.chessDelegate = chessDelegate;
+        this.rows = chessDelegate.getRows();
+        this.cols = chessDelegate.getColumns();
+        invalidate(); // Redraw the view when the delegate is set
+    }
 
-    // Method to define board size as per the canvas dimensions
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         canvas = new Canvas(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-        margin = 30;
+        margin = 20;
         availableWidth = canvas.getWidth() - 2 * margin;
         availableHeight = canvas.getHeight() - 2 * margin;
-
         // Calculate the cell size based on the maximum number of columns and rows and the available width and height
-        cellSize = Math.min(availableWidth / 8, availableHeight / 8);
-
+        cellSize = Math.min(availableWidth / 5, availableHeight / 6);
         // Calculate the size of the chessboard
-        boardWidth = cellSize * 8;
-        boardHeight = cellSize * 8;
+        boardWidth = cellSize * cols;
+        boardHeight = cellSize * rows;
 
         // Calculate the position of the chessboard to center it on the screen with margins
         boardLeft = (canvas.getWidth() - boardWidth) / 2;
         boardTop = (canvas.getHeight() - boardHeight) / 2;
     }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (chessDelegate != null) {
+            drawChessBoard(canvas);
+            drawPieces(canvas);
+            if (selectedCol != -1 && selectedRow != -1) {
+                drawSelectionBorder(canvas, selectedRow, selectedCol);
+            }
+        }
+    }
+
+    // Method to draw chessboard on canvas
+    private void drawChessBoard(@NonNull Canvas canvas) {
+        for (int col=0; col<=cols-1; col++) {
+            for (int row=0; row<=rows; row++) {
+                drawSquareAt(canvas, col, row, (col + row) % 2 == 0);
+            }
+        }
+    }
+
+    // Method to draw squares at given positions and given color
+    private void drawSquareAt(Canvas canvas, int col, int row, boolean isDark) {
+        paint.setShadowLayer(20, 0, 0, Color.GRAY);
+        setLayerType(LAYER_TYPE_SOFTWARE, paint);
+        if(row != chessDelegate.getRows()) {
+            if (isDark) {
+                paint.setColor(Color.parseColor("#d2ba7f"));
+            } else {
+                paint.setColor(Color.parseColor("#fef0bf"));
+            }
+            canvas.drawRect(boardLeft + col * cellSize, boardTop + (rows - row - 1) * cellSize, boardLeft + (col + 1) * cellSize, boardTop + ((rows - row - 1) + 1) * cellSize, paint);
+        }
+        else {
+            if (isDark) {
+                paint.setColor(Color.parseColor("#ad9a68"));
+            } else {
+                paint.setColor(Color.parseColor("#c2b78f"));
+            }
+            canvas.drawRect(boardLeft + col * cellSize, boardTop + row * cellSize, boardLeft + (col + 1) * (cellSize), boardTop + (row + 1) * (cellSize - 37), paint);
+        }
+    }
+
     // Method to draw chess pieces
     private void drawPieces(Canvas canvas) {
-        for (int col=0; col<=7; col++) {
-            for (int row=0; row<=7; row++) {
+        for (int col=0; col<=cols-1; col++) {
+            for (int row=0; row<=rows-1; row++) {
                 ChessPiece piece = chessDelegate.pieceAt(col, row);
                 if (piece != null) {
-                    drawPieceAt(canvas, col, row, piece.resId);
+                    drawPiece(canvas, col, row, piece.resId);
                 }
             }
         }
     }
 
-    // Method to provide position for the chess piece to be drawn
-    private void drawPieceAt(Canvas canvas, int col, int row, int resId) {
-        Bitmap bitmap = bitmaps.get(resId);
-        canvas.drawBitmap(bitmap, null, new RectF(boardLeft + col * cellSize, boardTop + (7 -row) * cellSize, boardLeft + (col + 1) * cellSize, boardTop + ((7 -row) + 1) * cellSize) , paint);
-    }
-
-    // Method to draw on canvas
-    @Override
-    protected void onDraw(@NonNull Canvas canvas) {
-        drawChessBoard(canvas);
-        drawPieces(canvas);
-        // Draw selection border if a piece is selected
-        if (selectedCol != -1 && selectedRow != -1) {
-            drawSelectionBorder(canvas, selectedRow, selectedCol);
-        }
+    private void drawPiece(Canvas canvas, int col, int row, int resId) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId);
+        canvas.drawBitmap(bitmap, null, new RectF(boardLeft + col * cellSize, boardTop + (rows - 1 - row) * cellSize, boardLeft + (col + 1) * cellSize, boardTop + ((rows - 1 - row) + 1) * cellSize) , paint);
     }
 
     private void drawSelectionBorder(Canvas canvas, int row, int col) {
@@ -128,7 +160,7 @@ public class ChessView extends View {
 
         // Calculate the coordinates of the selected cell
         float left = boardLeft + col * cellSize;
-        float top = boardTop + (7 - row) * cellSize;
+        float top = boardTop + (rows - 1 - row) * cellSize;
         float right = left + cellSize;
         float bottom = top + cellSize;
 
@@ -141,8 +173,11 @@ public class ChessView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 int clickedCol = (int) ((event.getX() - boardLeft) / cellSize);
-                int clickedRow = 7 - (int) ((event.getY() - boardTop) / cellSize);
-
+                int clickedRow = rows - 1 - (int) ((event.getY() - boardTop) / cellSize);
+                if ((event.getY() - boardTop) < 0) {
+                    clickedRow = rows;
+                }
+                Log.d(TAG, String.valueOf(clickedRow));
                 if (selectedCol == clickedCol && selectedRow == clickedRow) {
                     // If the same cell is clicked again, deselect it
                     selectedCol = -1;
@@ -170,66 +205,5 @@ public class ChessView extends View {
         }
         return true;
     }
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        switch (event.getAction()) {
-//            case MotionEvent.ACTION_DOWN:
-//                // Check if there's a piece at the clicked position
-//                int clickedCol = (int) ((event.getX() - boardLeft) / cellSize);
-//                int clickedRow = (int) ( 8 - ((event.getY() - boardTop) / cellSize));
-//                // Check if the clicked cell is already selected, if yes, deselect it
-//                if (selectedCol == clickedCol && selectedRow == clickedRow) {
-//                    selectedCol = -1;
-//                    selectedRow = -1;
-//                    invalidate(); // Redraw the view to remove the selection
-//                } else if (chessDelegate.pieceAt(clickedCol, clickedRow) != null) {
-//                    selectedCol = clickedCol;
-//                    selectedRow = clickedRow;
-//                    invalidate(); // Redraw the view to show selection
-//                } else if (selectedCol != -1 && selectedRow != -1) {
-//
-//                    // If a piece is selected and clicked on an empty cell, move the piece
-//                    int destinationCol = clickedCol;
-//                    int destinationRow = clickedRow;
-//                    chessDelegate.movePiece(selectedCol, selectedRow, destinationCol, destinationRow);
-//                    selectedCol = -1;
-//                    selectedRow = -1;
-//                }
-//                break;
-//        }
-//        return true;
-//    }
-
-    // Method to draw chessboard on canvas
-    private void drawChessBoard(@NonNull Canvas canvas) {
-        for (int col=0; col<=7; col++) {
-            for (int row=0; row<=8; row++) {
-                drawSquareAt(canvas, col, row, (col + row) % 2 == 0);
-            }
-        }
-    }
-
-    // Method to draw squares at given positions and given color
-    private void drawSquareAt(Canvas canvas, int col, int row, boolean isDark) {
-        paint.setShadowLayer(20, 0, 0, Color.GRAY);
-        setLayerType(LAYER_TYPE_SOFTWARE, paint);
-        if(row != 8) {
-            if (isDark) {
-                paint.setColor(Color.parseColor("#d2ba7f"));
-            } else {
-                paint.setColor(Color.parseColor("#fef0bf"));
-            }
-            canvas.drawRect(boardLeft + col * cellSize, boardTop + (7 -row) * cellSize, boardLeft + (col + 1) * cellSize, boardTop + ((7 -row)  + 1) * cellSize, paint);
-        }
-        else {
-            if (isDark) {
-                paint.setColor(Color.parseColor("#ad9a68"));
-            } else {
-                paint.setColor(Color.parseColor("#c2b78f"));
-            }
-            canvas.drawRect(boardLeft + col * cellSize, boardTop + row * cellSize, boardLeft + (col + 1) * (cellSize), boardTop + (row+1) * (cellSize - 13), paint);
-        }
-    }
-
 }
+
