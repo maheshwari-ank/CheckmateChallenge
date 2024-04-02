@@ -1,8 +1,11 @@
 package com.grandmasters.checkmatechallenge;
 
 import android.util.Log;
-
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
@@ -16,6 +19,8 @@ public class ChessLevel implements ChessDelegate {
     private Set<ChessPiece> piecesBox;
     private Set<ChessPiece> piecesBoxOriginalState;
 
+    private Map<Square, List<Square>> map = new HashMap<>();
+
     public Set<ChessPiece> getPiecesBoxOriginalState() {
         return piecesBoxOriginalState;
     }
@@ -28,8 +33,7 @@ public class ChessLevel implements ChessDelegate {
 
     public ChessLevel(int rows, int columns, Set<ChessPiece> piecesBox){
         if (columns > MAX_COLS || rows > MAX_ROWS) {
-            Log.d(TAG,"Number of columns or rows exceeds maximum limit.");
-            return;
+            throw new IllegalArgumentException("Number of columns or rows exceeds maximum limit.");
         }
         this.rows = rows;
         this.columns = columns;
@@ -40,25 +44,28 @@ public class ChessLevel implements ChessDelegate {
     public void resetLevel() {
         piecesBox.clear();
         moves.removeAllElements();
-        piecesBox.addAll(piecesBoxOriginalState);
+        piecesBox.addAll(deepCopySet(piecesBoxOriginalState));
     }
 
     public void addPiece(ChessPiece piece) {
         piecesBox.add(piece);
     }
 
-    private boolean isValidPosition(int col, int row) {
-        return col >= 0 && col < this.columns && row >= 0 && row < this.rows;
+    private boolean isValidPosition(Square square) {
+        int column = square.getCol();
+        int rows = square.getRow();
+        return column >= 0 && column < this.columns && rows >= 0 && rows < this.rows;
     }
-    public void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+//    public void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+    public void movePiece(Square fromSquare, Square toSquare) {
         // Check if the move is within the bounds of the chessboard
-        if (isValidPosition(fromCol, fromRow) && isValidPosition(toCol, toRow)) {
-            ChessPiece movingPiece = pieceAt(fromCol, fromRow);
-            ChessPiece pieceAtDestination = pieceAt(toCol, toRow);
+        if (isValidPosition(fromSquare) && isValidPosition(toSquare)) {
+            ChessPiece movingPiece = pieceAt(fromSquare);
+            ChessPiece pieceAtDestination = pieceAt(toSquare);
 
             // Check if move is valid
             if (movingPiece != null && (pieceAtDestination == null || pieceAtDestination.getPlayer() != movingPiece.getPlayer())) {
-                ChessMove move = new ChessMove(fromCol, fromRow, toCol, toRow, pieceAtDestination);
+                ChessMove move = new ChessMove(fromSquare.getCol(), fromSquare.getRow(), toSquare.getCol(), toSquare.getRow(), pieceAtDestination);
 
                 // Push the move onto the stack
                 moves.push(move);
@@ -69,8 +76,8 @@ public class ChessLevel implements ChessDelegate {
                 }
 
                 // Move the piece to the new position
-                movingPiece.setCol(toCol);
-                movingPiece.setRow(toRow);
+                movingPiece.setCol(toSquare.getCol());
+                movingPiece.setRow(toSquare.getRow());
             }
         } else {
             Log.e(TAG, "Invalid move: Out of bounds");
@@ -84,7 +91,7 @@ public class ChessLevel implements ChessDelegate {
             int fromRow = lastMove.getFromRow();
             int toCol = lastMove.getToCol();
             int toRow = lastMove.getToRow();
-            ChessPiece pieceMoved = pieceAt(toCol, toRow);
+            ChessPiece pieceMoved = pieceAt(new Square(toCol, toRow));
             ChessPiece pieceKilled = lastMove.getPieceKilled();
 
             // Restore piece to original position
@@ -101,9 +108,9 @@ public class ChessLevel implements ChessDelegate {
     }
 
     @Override
-    public ChessPiece pieceAt(int col, int row) {
+    public ChessPiece pieceAt(Square square) {
         for(ChessPiece piece : piecesBox) {
-            if(col == piece.getCol() && row == piece.getRow()) {
+            if(square.getCol() == piece.getCol() && square.getRow() == piece.getRow()) {
                 return piece;
             }
         }
@@ -132,6 +139,5 @@ public class ChessLevel implements ChessDelegate {
         }
         return copySet;
     }
-
 }
 

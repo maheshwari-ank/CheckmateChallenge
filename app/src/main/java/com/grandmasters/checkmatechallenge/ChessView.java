@@ -139,7 +139,7 @@ public class ChessView extends View {
     private void drawPieces(Canvas canvas) {
         for (int col=0; col<=cols-1; col++) {
             for (int row=0; row<=rows-1; row++) {
-                ChessPiece piece = chessDelegate.pieceAt(col, row);
+                ChessPiece piece = chessDelegate.pieceAt(new Square(col, row));
                 if (piece != null) {
                     drawPiece(canvas, col, row, piece.resId);
                 }
@@ -188,13 +188,13 @@ public class ChessView extends View {
                         // If a piece is already selected and clicked on a non-empty cell, move the piece
                         int destinationCol = clickedCol;
                         int destinationRow = clickedRow;
-                        chessDelegate.movePiece(selectedCol, selectedRow, destinationCol, destinationRow);
+                        chessDelegate.movePiece(new Square(selectedCol, selectedRow), new Square(destinationCol, destinationRow));
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving
                     } else {
                         // If the clicked cell is not empty, select it
-                        if (chessDelegate.pieceAt(clickedCol, clickedRow) != null) {
+                        if (chessDelegate.pieceAt(new Square(clickedCol, clickedRow)) != null) {
                             selectedCol = clickedCol;
                             selectedRow = clickedRow;
                             invalidate(); // Redraw the view to show selection

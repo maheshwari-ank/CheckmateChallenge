@@ -53,6 +53,10 @@ public class ChessPiece {
         this.resId = resId;
     }
 
+    public ChessPiece createPiece(int row, int col, ChessPlayer player, ChessPieceType pieceType, int resId) {
+        return new ChessPiece(row, col, player, pieceType, resId);
+    }
+
     // Copy constructor
     public ChessPiece(ChessPiece other) {
         this.row = other.row;
