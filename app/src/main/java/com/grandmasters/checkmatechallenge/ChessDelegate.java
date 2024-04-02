@@ -7,8 +7,11 @@ public interface ChessDelegate {
 
     void movePiece(Square fromSquare, Square toSquare);
 
+    boolean canKnightMove(Square fromSquare, Square toSquare);
+    boolean canPieceMove(Square fromSquare, Square toSquare);
     Set<ChessPiece> getPiecesBox();
 
+    Graph getBoardGraph();
     int getRows();
 
     int getColumns();
