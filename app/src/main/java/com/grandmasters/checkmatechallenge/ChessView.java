@@ -38,12 +38,13 @@ public class ChessView extends View {
     private final Map<Integer, Bitmap> bitmaps = new HashMap<>();
     private float availableWidth;
     private float availableHeight;
+    private Graph boardGraph;
+    private boolean bidirectional;
     public ChessView(Context context, AttributeSet attrs) {
         super(context, attrs);
         getImgResIds();
         loadBitmaps();
         paint = new Paint();
-
         this.selectedCol = -1;
         this.selectedRow = -1;
     }
@@ -70,6 +71,7 @@ public class ChessView extends View {
     }
     public void setChessDelegate(ChessDelegate chessDelegate) {
         this.chessDelegate = chessDelegate;
+        this.boardGraph = chessDelegate.getBoardGraph();
         this.rows = chessDelegate.getRows();
         this.cols = chessDelegate.getColumns();
         invalidate(); // Redraw the view when the delegate is set
@@ -99,7 +101,10 @@ public class ChessView extends View {
             drawChessBoard(canvas);
             drawPieces(canvas);
             if (selectedCol != -1 && selectedRow != -1) {
-                drawSelectionBorder(canvas, selectedRow, selectedCol);
+                drawSelectionBorder(canvas, new Square(selectedCol, selectedRow));
+            }
+            if (selectedCol != -1 && selectedRow != -1) {
+                highlightPossibleMoves(canvas, selectedCol, selectedRow);
             }
         }
     }
@@ -108,13 +113,16 @@ public class ChessView extends View {
     private void drawChessBoard(@NonNull Canvas canvas) {
         for (int col=0; col<=cols-1; col++) {
             for (int row=0; row<=rows; row++) {
-                drawSquareAt(canvas, col, row, (col + row) % 2 == 0);
+                drawSquareAt(canvas, new Square(col, row), (col + row) % 2 == 0);
             }
         }
     }
 
     // Method to draw squares at given positions and given color
-    private void drawSquareAt(Canvas canvas, int col, int row, boolean isDark) {
+//    private void drawSquareAt(Canvas canvas, int col, int row, boolean isDark) {
+    private void drawSquareAt(Canvas canvas, Square square, boolean isDark) {
+        int row = square.getRow();
+        int col = square.getCol();
         paint.setShadowLayer(20, 0, 0, Color.GRAY);
         setLayerType(LAYER_TYPE_SOFTWARE, paint);
         if(row != chessDelegate.getRows()) {
@@ -141,18 +149,22 @@ public class ChessView extends View {
             for (int row=0; row<=rows-1; row++) {
                 ChessPiece piece = chessDelegate.pieceAt(new Square(col, row));
                 if (piece != null) {
-                    drawPiece(canvas, col, row, piece.resId);
+                    drawPiece(canvas, new Square(col, row), piece.resId);
                 }
             }
         }
     }
 
-    private void drawPiece(Canvas canvas, int col, int row, int resId) {
+    private void drawPiece(Canvas canvas, Square square, int resId) {
+        int col = square.getCol();
+        int row = square.getRow();
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId);
         canvas.drawBitmap(bitmap, null, new RectF(boardLeft + col * cellSize, boardTop + (rows - 1 - row) * cellSize, boardLeft + (col + 1) * cellSize, boardTop + ((rows - 1 - row) + 1) * cellSize) , paint);
     }
 
-    private void drawSelectionBorder(Canvas canvas, int row, int col) {
+    private void drawSelectionBorder(Canvas canvas, Square square) {
+        int row = square.getRow();
+        int col = square.getCol();
         Paint paint = new Paint();
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
@@ -177,7 +189,6 @@ public class ChessView extends View {
                 if ((event.getY() - boardTop) < 0) {
                     clickedRow = rows;
                 }
-                Log.d(TAG, String.valueOf(clickedRow));
                 if (selectedCol == clickedCol && selectedRow == clickedRow) {
                     // If the same cell is clicked again, deselect it
                     selectedCol = -1;
@@ -205,5 +216,73 @@ public class ChessView extends View {
         }
         return true;
     }
+
+    private void highlightPossibleMoves(Canvas canvas, int col, int row) {
+        ChessPiece selectedPiece = chessDelegate.pieceAt(new Square(col, row));
+
+        if (selectedPiece != null) {
+            // Clear existing highlights
+            clearHighlights();
+            if (selectedPiece.getPieceType() == ChessPieceType.PAWN) {
+                bidirectional = false;
+            }
+            else {
+                bidirectional = true;
+            }
+            // Add edges to the graph based on possible moves
+            for (int c = 0; c < chessDelegate.getColumns(); c++) {
+                for (int r = 0; r < chessDelegate.getRows(); r++) {
+                    if (chessDelegate.canPieceMove(new Square(col, row), new Square(c, r))) {
+                        // Add an edge to the graph
+                        boardGraph.addEdge(new Square(col, row), new Square(c, r), bidirectional);
+                    }
+                }
+            }
+//            Log.d(TAG, String.valueOf(boardGraph.getAdjacentVertices(new Square(col, row))));
+            // Highlight cells based on the graph
+            Set<Square> adjacentSquares = new HashSet<>(boardGraph.getAdjacentVertices(new Square(col, row)));
+            for (Square square : adjacentSquares) {
+                // Highlight the cell if the piece can move to it
+                // You can implement highlighting logic here
+                // For example, change the background color of the cell
+
+                drawHighlightAndCircle(canvas, square);
+            }
+        }
+    }
+
+    private void drawHighlightAndCircle(Canvas canvas, Square square) {
+        int row = square.getRow();
+        int col = square.getCol();
+
+        // Calculate cell position
+        float left = boardLeft + col * cellSize;
+        float top = boardTop + (rows - 1 - row) * cellSize;
+        float right = left + cellSize;
+        float bottom = top + cellSize;
+
+        // Draw highlight
+        Paint highlightPaint = new Paint();
+        highlightPaint.setColor(Color.YELLOW);
+        canvas.drawRect(left, top, right, bottom, highlightPaint);
+
+        // Draw circle in the middle
+//        Paint circlePaint = new Paint();
+//        circlePaint.setColor(Color.GRAY);
+//        float centerX = (left + right) / 2;
+//        float centerY = (top + bottom) / 2;
+//        float radius = Math.min(cellSize / 3, cellSize / 4); // Adjust the radius as needed
+//        canvas.drawCircle(centerX, centerY, radius, circlePaint);
+    }
+
+
+    // Method to clear existing highlights
+    private void clearHighlights() {
+        // Remove all edges from the graph
+        for (Square vertex : boardGraph.getVertices()) {
+            boardGraph.removeEdgesFromVertex(vertex);
+        }
+    }
+
 }
 

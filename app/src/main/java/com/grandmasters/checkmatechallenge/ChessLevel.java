@@ -18,9 +18,7 @@ public class ChessLevel implements ChessDelegate {
     private int columns;
     private Set<ChessPiece> piecesBox;
     private Set<ChessPiece> piecesBoxOriginalState;
-
-    private Map<Square, List<Square>> map = new HashMap<>();
-
+    private Graph boardGraph;
     public Set<ChessPiece> getPiecesBoxOriginalState() {
         return piecesBoxOriginalState;
     }
@@ -28,8 +26,15 @@ public class ChessLevel implements ChessDelegate {
     public void setPiecesBoxOriginalState(Set<ChessPiece> piecesBoxOriginalState) {
         this.piecesBoxOriginalState = piecesBoxOriginalState;
     }
-
     Stack<ChessMove> moves = new Stack<>();
+
+    public Graph getBoardGraph() {
+        return boardGraph;
+    }
+
+    public void setBoardGraph(Graph boardGraph) {
+        this.boardGraph = boardGraph;
+    }
 
     public ChessLevel(int rows, int columns, Set<ChessPiece> piecesBox){
         if (columns > MAX_COLS || rows > MAX_ROWS) {
@@ -39,8 +44,17 @@ public class ChessLevel implements ChessDelegate {
         this.columns = columns;
         this.piecesBox = piecesBox;
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
+        initializeGraph();
     }
 
+    private void initializeGraph() {
+        boardGraph = new Graph();
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                boardGraph.addVertex(new Square(col, row));
+            }
+        }
+    }
     public void resetLevel() {
         piecesBox.clear();
         moves.removeAllElements();
@@ -57,31 +71,36 @@ public class ChessLevel implements ChessDelegate {
         return column >= 0 && column < this.columns && rows >= 0 && rows < this.rows;
     }
 //    public void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+
+
     public void movePiece(Square fromSquare, Square toSquare) {
-        // Check if the move is within the bounds of the chessboard
-        if (isValidPosition(fromSquare) && isValidPosition(toSquare)) {
-            ChessPiece movingPiece = pieceAt(fromSquare);
-            ChessPiece pieceAtDestination = pieceAt(toSquare);
+        if (canPieceMove(fromSquare, toSquare)) {
+            // Check if the move is within the bounds of the chessboard
+            if (isValidPosition(fromSquare) && isValidPosition(toSquare)) {
+                ChessPiece movingPiece = pieceAt(fromSquare);
+                ChessPiece pieceAtDestination = pieceAt(toSquare);
 
-            // Check if move is valid
-            if (movingPiece != null && (pieceAtDestination == null || pieceAtDestination.getPlayer() != movingPiece.getPlayer())) {
-                ChessMove move = new ChessMove(fromSquare.getCol(), fromSquare.getRow(), toSquare.getCol(), toSquare.getRow(), pieceAtDestination);
+                // Check if move is valid
+                if (movingPiece != null && (pieceAtDestination == null || pieceAtDestination.getPlayer() != movingPiece.getPlayer())) {
+                    ChessMove move = new ChessMove(fromSquare.getCol(), fromSquare.getRow(), toSquare.getCol(), toSquare.getRow(), pieceAtDestination);
 
-                // Push the move onto the stack
-                moves.push(move);
+                    // Push the move onto the stack
+                    moves.push(move);
 
-                // Check if a piece is killed during the move
-                if (pieceAtDestination != null) {
-                    piecesBox.remove(pieceAtDestination);
+                    // Check if a piece is killed during the move
+                    if (pieceAtDestination != null) {
+                        piecesBox.remove(pieceAtDestination);
+                    }
+
+                    // Move the piece to the new position
+                    movingPiece.setCol(toSquare.getCol());
+                    movingPiece.setRow(toSquare.getRow());
                 }
-
-                // Move the piece to the new position
-                movingPiece.setCol(toSquare.getCol());
-                movingPiece.setRow(toSquare.getRow());
+            } else {
+                Log.e(TAG, "Invalid move: Out of bounds");
             }
-        } else {
-            Log.e(TAG, "Invalid move: Out of bounds");
         }
+
     }
 
     public void undoLastMove() {
@@ -115,6 +134,20 @@ public class ChessLevel implements ChessDelegate {
             }
         }
         return null;
+    }
+
+    public boolean canKnightMove(Square fromSquare, Square toSquare) {
+        return Math.abs(fromSquare.getCol() - toSquare.getCol()) == 2 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 ||
+                Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 2;
+    }
+
+    public boolean canPieceMove(Square fromSquare, Square toSquare) {
+        ChessPiece movingPiece = pieceAt(fromSquare);
+        switch (movingPiece.getPieceType()) {
+            case KNIGHT:
+                return canKnightMove(fromSquare, toSquare);
+        }
+        return false;
     }
 
     @Override
