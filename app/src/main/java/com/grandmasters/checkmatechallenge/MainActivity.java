@@ -2,9 +2,11 @@ package com.grandmasters.checkmatechallenge;
 
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.contentcapture.DataRemovalRequest;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     private ChessView chessView;
     private List<ChessLevel> gameLevels;
     private Set<ChessPiece> pieces = new HashSet<>();
+    private DataManager dataManager;
+    private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,16 +31,21 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         chessView = findViewById(R.id.chess_view);
+        dataManager = new DataManager();
+
+        // Retrieve chess level from DataManager and set the ChessDelegate
+        ChessLevel level = dataManager.getChessLevel("1");
         // Initialize and set the desired ChessLevel
-        ChessLevel level2 = createLevel(4,2);
+//        ChessLevel level2 = createLevel(4,2);
 
         // Add pieces to the level as needed
-        chessView.setChessDelegate(level2);
-
+        chessView.setChessDelegate(level);
+        Log.d(TAG, String.valueOf(level.getPiecesBox().size()));
+        Log.d(TAG, String.valueOf(level.getPiecesBoxOriginalState().size()));
         findViewById(R.id.resetButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                level2.resetLevel();
+                level.resetLevel();
                 chessView.invalidate();
             }
         });
@@ -44,19 +53,19 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.undoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                level2.undoLastMove();
+                level.undoLastMove();
                 chessView.invalidate();
             }
         });
     }
 
-    private ChessLevel createLevel(int rows, int cols) {
-        // Implement this method to create the desired level with specific rows, columns, and pieces
-        // Add pieces to the set according to the level requirements
-        pieces.add(new ChessPiece(0, 0, ChessPlayer.WHITE, ChessPieceType.QUEEN, R.drawable.queen_white));
-        pieces.add(new ChessPiece(1, 1, ChessPlayer.WHITE, ChessPieceType.KNIGHT, R.drawable.knight_white));
-        pieces.add(new ChessPiece(3, 1, ChessPlayer.BLACK, ChessPieceType.KING, R.drawable.king_black));
-
-        return new ChessLevel(rows, cols, pieces);
-    }
+//    private ChessLevel createLevel(int rows, int cols) {
+//        // Implement this method to create the desired level with specific rows, columns, and pieces
+//        // Add pieces to the set according to the level requirements
+//        pieces.add(new ChessPiece(0, 0, ChessPlayer.WHITE, ChessPieceType.QUEEN, R.drawable.queen_white));
+//        pieces.add(new ChessPiece(1, 1, ChessPlayer.WHITE, ChessPieceType.KNIGHT, R.drawable.knight_white));
+//        pieces.add(new ChessPiece(3, 1, ChessPlayer.BLACK, ChessPieceType.KING, R.drawable.king_black));
+//
+//        return new ChessLevel(rows, cols, pieces);
+//    }
 }

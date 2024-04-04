@@ -246,12 +246,12 @@ public class ChessView extends View {
                 // You can implement highlighting logic here
                 // For example, change the background color of the cell
 
-                drawHighlightAndCircle(canvas, square);
+                drawHighlight(canvas, square);
             }
         }
     }
 
-    private void drawHighlightAndCircle(Canvas canvas, Square square) {
+    private void drawHighlight(Canvas canvas, Square square) {
         int row = square.getRow();
         int col = square.getCol();
 
@@ -263,15 +263,15 @@ public class ChessView extends View {
 
         // Draw highlight
         Paint highlightPaint = new Paint();
-        highlightPaint.setColor(Color.YELLOW);
+        highlightPaint.setColor(Color.argb(60, 250, 250, 0));
         canvas.drawRect(left, top, right, bottom, highlightPaint);
 
         // Draw circle in the middle
-//        Paint circlePaint = new Paint();
-//        circlePaint.setColor(Color.GRAY);
+        Paint circlePaint = new Paint();
+//        circlePaint.setColor(Color.argb(90, 250, 250, 0));
 //        float centerX = (left + right) / 2;
 //        float centerY = (top + bottom) / 2;
-//        float radius = Math.min(cellSize / 3, cellSize / 4); // Adjust the radius as needed
+//        float radius = Math.min(cellSize / 3, cellSize / 3); // Adjust the radius as needed
 //        canvas.drawCircle(centerX, centerY, radius, circlePaint);
     }
 
