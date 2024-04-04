@@ -14,6 +14,7 @@ public class ChessLevel implements ChessDelegate {
     private static final int MAX_ROWS = 6;
     private static final int MAX_COLS = 5;
     private static final String TAG = "ChessLevel";
+    private String levelId;
     private int rows;
     private int columns;
     private Set<ChessPiece> piecesBox;
@@ -36,14 +37,18 @@ public class ChessLevel implements ChessDelegate {
         this.boardGraph = boardGraph;
     }
 
-    public ChessLevel(int rows, int columns, Set<ChessPiece> piecesBox){
+    public ChessLevel(String levelId, int rows, int columns){
         if (columns > MAX_COLS || rows > MAX_ROWS) {
             throw new IllegalArgumentException("Number of columns or rows exceeds maximum limit.");
         }
+        this.levelId = levelId;
         this.rows = rows;
         this.columns = columns;
-        this.piecesBox = piecesBox;
+//        this.piecesBox = piecesBox;
+        this.piecesBox = new HashSet<>();
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
+
+
         initializeGraph();
     }
 
@@ -58,11 +63,15 @@ public class ChessLevel implements ChessDelegate {
     public void resetLevel() {
         piecesBox.clear();
         moves.removeAllElements();
-        piecesBox.addAll(deepCopySet(piecesBoxOriginalState));
+//        piecesBox.addAll(deepCopySet(piecesBoxOriginalState));
+        for (ChessPiece originalPiece : piecesBoxOriginalState) {
+            piecesBox.add(new ChessPiece(originalPiece));
+        }
     }
 
     public void addPiece(ChessPiece piece) {
         piecesBox.add(piece);
+//        piecesBoxOriginalState.add(piece);
     }
 
     private boolean isValidPosition(Square square) {
