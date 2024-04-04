@@ -3,12 +3,15 @@ package com.grandmasters.checkmatechallenge;
 import java.util.Set;
 
 public interface ChessDelegate {
-    ChessPiece pieceAt(int col, int row);
+    ChessPiece pieceAt(Square square);
 
-    void movePiece(int fromCol, int fromRow, int toCol, int toRow);
+    void movePiece(Square fromSquare, Square toSquare);
 
+    boolean canKnightMove(Square fromSquare, Square toSquare);
+    boolean canPieceMove(Square fromSquare, Square toSquare);
     Set<ChessPiece> getPiecesBox();
 
+    Graph getBoardGraph();
     int getRows();
 
     int getColumns();
