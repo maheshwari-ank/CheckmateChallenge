@@ -145,16 +145,56 @@ public class ChessLevel implements ChessDelegate {
         return null;
     }
 
+    public boolean isClearHorizontal(Square fromSquare, Square toSquare){
+        if(fromSquare.getRow() != toSquare.getRow())    return false;
+        int gap = Math.abs(fromSquare.getRow() - toSquare.getRow()) -1;
+        if(gap == 0)    return true;
+        for(int i=1;i<=gap;i++){
+            int nextCol = toSquare.getCol() > fromSquare.getCol() ? fromSquare.getCol() + i :
+                    fromSquare.getCol() - i;
+            if(pieceAt(new Square(nextCol, fromSquare.getRow())) != null){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isClearVertical(Square fromSquare, Square toSquare){
+        if(fromSquare.getCol() != toSquare.getCol())    return false;
+        int gap = Math.abs(fromSquare.getRow() - toSquare.getRow()) -1;
+        if(gap == 0)    return true;
+        for(int i=1;i<=gap;i++){
+            int nextRow = toSquare.getRow() > fromSquare.getRow() ? fromSquare.getRow() + i :
+                    fromSquare.getRow() - i;
+            if(pieceAt(new Square(nextRow, fromSquare.getCol())) != null){
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean canKnightMove(Square fromSquare, Square toSquare) {
         return Math.abs(fromSquare.getCol() - toSquare.getCol()) == 2 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 ||
                 Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 2;
     }
+    
+    public boolean canRookMove(Square fromSquare, Square toSquare){
+        return (fromSquare.getCol() == toSquare.getCol() && isClearHorizontal(fromSquare, toSquare))
+                || (fromSquare.getRow() == toSquare.getRow() && isClearVertical(fromSquare, toSquare));
+    }
+    
+
 
     public boolean canPieceMove(Square fromSquare, Square toSquare) {
+        if(fromSquare.getCol() == toSquare.getCol() && fromSquare.getRow() == toSquare.getRow()){
+            return false;
+        }
         ChessPiece movingPiece = pieceAt(fromSquare);
         switch (movingPiece.getPieceType()) {
             case KNIGHT:
                 return canKnightMove(fromSquare, toSquare);
+            case ROOK:
+                return canRookMove(fromSquare, toSquare);
         }
         return false;
     }
