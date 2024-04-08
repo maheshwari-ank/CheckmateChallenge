@@ -196,6 +196,11 @@ public class ChessLevel implements ChessDelegate {
         return true;
     }
     public boolean canKnightMove(Square fromSquare, Square toSquare) {
+        ChessPiece piece1 = pieceAt(fromSquare);
+        ChessPiece piece2 = pieceAt(toSquare);
+        if (piece1 != null && piece2 != null && piece1.getPlayer().equals(piece2.getPlayer())) {
+            return false;
+        }
         return Math.abs(fromSquare.getCol() - toSquare.getCol()) == 2 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 ||
                 Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 2;
     }
