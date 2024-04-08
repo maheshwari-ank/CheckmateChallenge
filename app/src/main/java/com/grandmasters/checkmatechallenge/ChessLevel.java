@@ -147,8 +147,11 @@ public class ChessLevel implements ChessDelegate {
 
     public boolean isClearHorizontal(Square fromSquare, Square toSquare) {
         if (fromSquare.getRow() != toSquare.getRow()) return false;
-        int gap = Math.abs(fromSquare.getRow() - toSquare.getRow()) - 1;
-        if (gap == 0) return true;
+        int gap = Math.abs(fromSquare.getCol() - toSquare.getCol()) - 1;
+        ChessPiece pieceAtDestination = pieceAt(toSquare);
+        if (pieceAtDestination != null && pieceAtDestination.getPlayer().equals(pieceAt(fromSquare).getPlayer())) {
+            return false;
+        }
         for (int i = 1; i <= gap; i++) {
             int nextCol = toSquare.getCol() > fromSquare.getCol() ? fromSquare.getCol() + i :
                     fromSquare.getCol() - i;
@@ -162,11 +165,14 @@ public class ChessLevel implements ChessDelegate {
     public boolean isClearVertical(Square fromSquare, Square toSquare){
         if(fromSquare.getCol() != toSquare.getCol())    return false;
         int gap = Math.abs(fromSquare.getRow() - toSquare.getRow()) -1;
-        if(gap == 0)    return true;
+        ChessPiece pieceAtDestination = pieceAt(toSquare);
+        if (pieceAtDestination != null && pieceAtDestination.getPlayer().equals(pieceAt(fromSquare).getPlayer())) {
+            return false;
+        }
         for(int i=1;i<=gap;i++){
             int nextRow = toSquare.getRow() > fromSquare.getRow() ? fromSquare.getRow() + i :
                     fromSquare.getRow() - i;
-            if(pieceAt(new Square(nextRow, fromSquare.getCol())) != null){
+            if(pieceAt(new Square(fromSquare.getCol(), nextRow)) != null){
                 return false;
             }
         }
@@ -195,8 +201,8 @@ public class ChessLevel implements ChessDelegate {
     }
     
     public boolean canRookMove(Square fromSquare, Square toSquare){
-        return ((fromSquare.getCol() == toSquare.getCol() && isClearHorizontal(fromSquare, toSquare))
-                || (fromSquare.getRow() == toSquare.getRow() && isClearVertical(fromSquare, toSquare)));
+        return ((fromSquare.getRow() == toSquare.getRow() && isClearHorizontal(fromSquare, toSquare))
+                || (fromSquare.getCol() == toSquare.getCol() && isClearVertical(fromSquare, toSquare)));
     }
 
     public boolean canBishopMove(Square fromSquare, Square toSquare) {
