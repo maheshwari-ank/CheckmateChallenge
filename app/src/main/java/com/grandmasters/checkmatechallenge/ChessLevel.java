@@ -195,6 +195,91 @@ public class ChessLevel implements ChessDelegate {
         }
         return true;
     }
+
+    public boolean canPawnMove(Square fromSquare, Square toSquare) {
+        if (toSquare.getRow() - fromSquare.getRow() == 1 && toSquare.getCol() == fromSquare.getCol()) {
+            return true;
+        }
+        return false;
+    }
+    public boolean canQueenMove(Square fromSquare, Square toSquare) {
+        return canRookMove(fromSquare, toSquare) || canBishopMove(fromSquare, toSquare);
+    }
+
+    public boolean canKingMove(Square kingSquare) {
+        for (ChessPiece piece : piecesBox) {
+            if (!piece.getPlayer().equals(ChessPlayer.WHITE)) {
+                Square pieceSquare = new Square(piece.getCol(), piece.getRow());
+                List<Square> adjacentSquares = boardGraph.getAdjacentVertices(pieceSquare);
+
+                for (Square adjacentSquare : adjacentSquares) {
+                    ChessPiece adjacentPiece = pieceAt(adjacentSquare);
+                    if (adjacentPiece != null && adjacentPiece.getPlayer().equals(ChessPlayer.WHITE)) {
+                        // The king is in check
+                        return true;
+                    }
+                }
+            }
+        }
+        // King is not in check
+        return false;
+    }
+
+    public boolean canKingMove(Square fromSquare, Square toSquare) {
+        // Check if the move is within one square horizontally or vertically
+        if (Math.abs(fromSquare.getCol() - toSquare.getCol()) <= 1 && Math.abs(fromSquare.getRow() - toSquare.getRow()) <= 1) {
+            // Simulate the move and check if the king would still be in check
+            ChessPiece king = pieceAt(fromSquare);
+            ChessPiece destinationPiece = pieceAt(toSquare);
+            king.setRow(toSquare.getRow());
+            king.setCol(toSquare.getCol());
+            // Simulate the move
+//            movePiece(fromSquare, toSquare);
+            boolean kingInCheck = isKingInCheck(king.getPlayer());
+            // Undo the move
+            king.setRow(fromSquare.getRow());
+            king.setCol(fromSquare.getCol());
+//            movePiece(toSquare, fromSquare);
+            if (destinationPiece != null) {
+                // Restore the destination piece if it was captured
+                piecesBox.add(destinationPiece);
+            }
+            // Return true if the king is not in check after the move
+            return !kingInCheck;
+        }
+        return false;
+    }
+
+    public boolean isKingInCheck(ChessPlayer player) {
+        // Find the king's position
+        Square kingPosition = null;
+        for (int col = 0; col < columns; col++) {
+            for (int row = 0; row < rows; row++) {
+                ChessPiece piece = pieceAt(new Square(col, row));
+                if (piece != null && piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == player) {
+                    kingPosition = new Square(col, row);
+                    break;
+                }
+            }
+            if (kingPosition != null) break;
+        }
+
+        if (kingPosition == null) return false; // King not found, should not happen in a valid chess game
+
+        // Iterate through opponent's pieces and check if any of them can attack the king
+        for (int col = 0; col < columns; col++) {
+            for (int row = 0; row < rows; row++) {
+                ChessPiece piece = pieceAt(new Square(col, row));
+                if (piece != null && piece.getPlayer() != player) {
+                    if (canPieceMove(new Square(col, row), kingPosition)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
     public boolean canKnightMove(Square fromSquare, Square toSquare) {
         return Math.abs(fromSquare.getCol() - toSquare.getCol()) == 2 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 ||
                 Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 2;
@@ -229,6 +314,12 @@ public class ChessLevel implements ChessDelegate {
                 return canRookMove(fromSquare, toSquare);
             case BISHOP:
                 return canBishopMove(fromSquare, toSquare);
+            case QUEEN:
+                return canQueenMove(fromSquare, toSquare);
+            case KING:
+                return canKingMove(fromSquare, toSquare);
+            case PAWN:
+                return canPawnMove(fromSquare, toSquare);
         }
         return false;
     }

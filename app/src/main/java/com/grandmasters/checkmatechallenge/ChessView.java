@@ -47,6 +47,7 @@ public class ChessView extends View {
         paint = new Paint();
         this.selectedCol = -1;
         this.selectedRow = -1;
+
     }
 
     // Method Get Chess Pieces Resource Ids and save them in a Hash set
@@ -184,6 +185,7 @@ public class ChessView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+
                 int clickedCol = (int) ((event.getX() - boardLeft) / cellSize);
                 int clickedRow = rows - 1 - (int) ((event.getY() - boardTop) / cellSize);
                 if ((event.getY() - boardTop) < 0) {
@@ -203,6 +205,12 @@ public class ChessView extends View {
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving
+
+                        boolean whiteKingInCheck = chessDelegate.isKingInCheck(ChessPlayer.WHITE);
+                        boolean blackKingInCheck = chessDelegate.isKingInCheck(ChessPlayer.BLACK);
+                        if (whiteKingInCheck || blackKingInCheck) {
+                            Log.d(TAG, "Check!!!!!!!!!");
+                        }
                     } else {
                         // If the clicked cell is not empty, select it
                         if (chessDelegate.pieceAt(new Square(clickedCol, clickedRow)) != null) {
@@ -212,6 +220,7 @@ public class ChessView extends View {
                         }
                     }
                 }
+
                 break;
         }
         return true;
@@ -242,10 +251,6 @@ public class ChessView extends View {
             // Highlight cells based on the graph
             Set<Square> adjacentSquares = new HashSet<>(boardGraph.getAdjacentVertices(new Square(col, row)));
             for (Square square : adjacentSquares) {
-                // Highlight the cell if the piece can move to it
-                // You can implement highlighting logic here
-                // For example, change the background color of the cell
-
                 drawHighlight(canvas, square);
             }
         }
@@ -283,6 +288,5 @@ public class ChessView extends View {
             boardGraph.removeEdgesFromVertex(vertex);
         }
     }
-
 }
 
