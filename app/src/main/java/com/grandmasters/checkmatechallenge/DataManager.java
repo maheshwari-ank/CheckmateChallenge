@@ -22,6 +22,12 @@ public class DataManager {
         addPieceToChessLevel("1",3,2,ChessPlayer.WHITE,ChessPieceType.ROOK,R.drawable.rook_white);
         addPieceToChessLevel("1",1,3,ChessPlayer.BLACK,ChessPieceType.QUEEN,R.drawable.queen_black);
 
+        createChessLevel("2", 4,3);
+        addPieceToChessLevel("2",2,0,ChessPlayer.WHITE,ChessPieceType.QUEEN,R.drawable.queen_white);
+        addPieceToChessLevel("2",0,1,ChessPlayer.WHITE,ChessPieceType.BISHOP,R.drawable.bishop_white);
+        addPieceToChessLevel("2",3,2,ChessPlayer.WHITE,ChessPieceType.KING,R.drawable.king_white);
+
+
         Set<ChessPiece> originalPieces = getChessLevel("1").getPiecesBox();
         Set<ChessPiece> copiedPieces = deepCopySet(originalPieces);
         getChessLevel("1").setPiecesBoxOriginalState(copiedPieces);
