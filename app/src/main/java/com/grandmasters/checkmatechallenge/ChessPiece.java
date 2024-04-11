@@ -65,6 +65,12 @@ public class ChessPiece {
         this.pieceType = other.pieceType;
         this.resId = other.resId;
     }
+    public ChessPiece(int row, int col, ChessPieceType pieceType) {
+        this.row = row;
+        this.col = col;
+
+        this.pieceType = pieceType;
+    }
 
     public ChessPiece copy() {
         return new ChessPiece(this);
