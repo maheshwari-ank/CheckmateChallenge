@@ -196,10 +196,54 @@ public class ChessLevel implements ChessDelegate {
         return true;
     }
 
-    public boolean canPawnMove(Square fromSquare, Square toSquare) {
-        if (toSquare.getRow() - fromSquare.getRow() == 1 && toSquare.getCol() == fromSquare.getCol()) {
+    public boolean isClearFront(Square fromSquare, Square toSquare){
+        int gap = Math.abs(fromSquare.getRow() - toSquare.getRow()) - 1;
+        if(gap == 0){
+            if (pieceAt(new Square(fromSquare.getCol(), toSquare.getRow())) == null){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkDiagonal(Square fromSquare, Square toSquare){
+        ChessPiece piece = pieceAt(new Square(fromSquare.getCol(), fromSquare.getRow()));
+        int gapRow = 0;
+        if(piece.getPlayer().equals(ChessPlayer.BLACK)) {
+             gapRow = toSquare.getRow() - fromSquare.getRow() - 1;
+        }
+        else{
+            gapRow = fromSquare.getRow() - toSquare.getRow() - 1;
+        }
+        int gapCol = Math.abs(toSquare.getCol() - fromSquare.getCol()) - 1;
+
+        if(gapRow == 0 && gapCol == 0
+                && pieceAt(new Square(gapCol + toSquare.getCol(), gapRow + toSquare.getRow())) != null) {
             return true;
         }
+        else{
+            return false;
+        }
+    }
+
+    public boolean canPawnMove(Square fromSquare, Square toSquare) {
+        ChessPiece piece = pieceAt(new Square(fromSquare.getCol(), fromSquare.getRow()));
+        if(piece.getPlayer().equals(ChessPlayer.BLACK)){
+            if ((toSquare.getRow() - fromSquare.getRow() == 1 && toSquare.getCol() == fromSquare.getCol() &&
+                    isClearFront(fromSquare, toSquare)) || checkDiagonal(fromSquare, toSquare)) {
+                return true;
+            }
+        }
+        else{
+            if((fromSquare.getRow() - toSquare.getRow() == 1 && toSquare.getCol() == fromSquare.getCol()
+                    && isClearFront(fromSquare, toSquare)) || checkDiagonal(fromSquare, toSquare)){
+                return true;
+            }
+        }
+
         return false;
     }
     public boolean canQueenMove(Square fromSquare, Square toSquare) {
