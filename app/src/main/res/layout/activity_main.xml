@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relativeLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp"
+    android:paddingStart="0dp"
+    android:paddingEnd="0dp"
+    android:layout_gravity="center"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+
+    <!--    <androidx.appcompat.widget.Toolbar-->
+    <!--        android:id="@+id/toolbar"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="?attr/actionBarSize"-->
+    <!--        android:layout_alignParentTop="true"-->
+    <!--        android:layout_marginTop="0dp"-->
+    <!--        android:background="#3F51F8"-->
+    <!--        android:fitsSystemWindows="true"-->
+    <!--        app:title="Checkmate Challenge"-->
+    <!--        app:titleTextColor="@android:color/white" />-->
+
+
+    <com.grandmasters.checkmatechallenge.ChessView
+        android:id="@+id/chess_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/app_background"
+        android:fitsSystemWindows="true"
+        tools:context=".MainActivity" />
+
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="164dp"
+        android:layout_alignBottom="@id/chess_view"
+        android:layout_alignParentBottom="false"
+        android:layout_centerInParent="false"
+        android:layout_centerHorizontal="false"
+        android:layout_centerVertical="false"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="horizontal"
+        android:outlineProvider="background">
+
+
+        <Button
+            android:id="@+id/hintButton"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/roundstyle"
+            android:drawableTop="@drawable/bulb_outline"
+            android:gravity="center_horizontal|center_vertical"
+            android:outlineProvider="background"
+            android:paddingTop="10dp"
+            android:text="Hint"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/resetButton"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/roundstyle"
+            android:drawableTop="@drawable/refresh_outline"
+            android:gravity="center_horizontal|center_vertical"
+            android:paddingTop="10dp"
+            android:text="Reset"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/undoButton"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/roundstyle"
+            android:drawableTop="@drawable/return_up_back_outline"
+            android:gravity="center_horizontal|center_vertical"
+            android:paddingTop="10dp"
+            android:text="Undo"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="#000000" />
+
+
+    </LinearLayout>
+
+</RelativeLayout>
+
+
+    <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:id="@+id/main"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    tools:context=".MainActivity">-->
+
+<!--    &lt;!&ndash; Toolbar &ndash;&gt;-->
+<!--    <androidx.appcompat.widget.Toolbar-->
+<!--        android:id="@+id/toolbar"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="?attr/actionBarSize"-->
+<!--        android:background="?attr/colorPrimary"-->
+<!--        app:title="Checkmate Challenge"-->
+<!--        app:titleTextColor="@android:color/white"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--    &lt;!&ndash; TextView &ndash;&gt;-->
+<!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:scaleX="2"-->
+<!--        android:scaleY="2"-->
+<!--        android:text="Hello World!"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/toolbar" />-->
+
+<!--</androidx.constraintlayout.widget.ConstraintLayout>-->
