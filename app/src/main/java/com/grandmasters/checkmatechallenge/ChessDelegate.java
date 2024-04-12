@@ -9,6 +9,7 @@ public interface ChessDelegate {
     boolean isKingInCheck(ChessPlayer player);
     boolean canKnightMove(Square fromSquare, Square toSquare);
     boolean canPieceMove(Square fromSquare, Square toSquare);
+    boolean canKingMove(Square fromSquare, Square toSquare);
     Set<ChessPiece> getPiecesBox();
 
     Graph getBoardGraph();
