@@ -6,6 +6,28 @@ public class ChessPiece {
     private int col;
     private ChessPlayer player;
     private ChessPieceType pieceType;
+    private int pieceId;
+    private int levelId;
+
+    public int getLevelId() {
+        return levelId;
+    }
+
+    public void setLevelId(int levelId) {
+        this.levelId = levelId;
+    }
+
+    public int getPieceId() {
+        return pieceId;
+    }
+
+    public void setPieceId(int pieceId) {
+        this.pieceId = pieceId;
+    }
+
+    public void setPlayer(ChessPlayer player) {
+        this.player = player;
+    }
 
     public int resId;
 
@@ -24,6 +46,7 @@ public class ChessPiece {
     public ChessPieceType getPieceType() {
         return pieceType;
     }
+
 
     public void setPieceType(ChessPieceType pieceType) {
         this.pieceType = pieceType;
@@ -45,7 +68,13 @@ public class ChessPiece {
         return col;
     }
 
-    public ChessPiece(int row, int col, ChessPlayer player, ChessPieceType pieceType, int resId) {
+    public ChessPiece() {
+
+    }
+
+    public ChessPiece(int levelId, int pieceId, int row, int col, ChessPlayer player, ChessPieceType pieceType, int resId) {
+        this.levelId = levelId;
+        this.pieceId = pieceId;
         this.row = row;
         this.col = col;
         this.player = player;
@@ -53,9 +82,9 @@ public class ChessPiece {
         this.resId = resId;
     }
 
-    public ChessPiece createPiece(int row, int col, ChessPlayer player, ChessPieceType pieceType, int resId) {
-        return new ChessPiece(row, col, player, pieceType, resId);
-    }
+//    public ChessPiece createPiece(int row, int col, ChessPlayer player, ChessPieceType pieceType, int resId) {
+//        return new ChessPiece(row, col, player, pieceType, resId);
+//    }
 
     // Copy constructor
     public ChessPiece(ChessPiece other) {

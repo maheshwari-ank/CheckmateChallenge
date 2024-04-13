@@ -8,15 +8,43 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
+import java.io.Serializable;
 
-public class ChessLevel implements ChessDelegate {
+public class ChessLevel implements ChessDelegate, Serializable {
 
     private static final int MAX_ROWS = 6;
     private static final int MAX_COLS = 5;
     private static final String TAG = "ChessLevel";
-    private String levelId;
+
+    public int getLevelId() {
+        return levelId;
+    }
+
+    public void setLevelId(int levelId) {
+        this.levelId = levelId;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
+    public void setColumns(int columns) {
+        this.columns = columns;
+    }
+
+    public boolean isSolved() {
+        return isSolved;
+    }
+
+    public void setSolved(boolean solved) {
+        isSolved = solved;
+    }
+
+    //    private String levelId;
+    private int levelId;
     private int rows;
     private int columns;
+    private boolean isSolved;
     private Set<ChessPiece> piecesBox;
     private Set<ChessPiece> piecesBoxOriginalState;
     private Graph boardGraph;
@@ -37,17 +65,19 @@ public class ChessLevel implements ChessDelegate {
         this.boardGraph = boardGraph;
     }
 
-    public ChessLevel(String levelId, int rows, int columns){
+    public ChessLevel() {
+
+    }
+    public ChessLevel(int levelId, int rows, int columns, boolean isSolved){
         if (columns > MAX_COLS || rows > MAX_ROWS) {
             throw new IllegalArgumentException("Number of columns or rows exceeds maximum limit.");
         }
         this.levelId = levelId;
         this.rows = rows;
         this.columns = columns;
-//        this.piecesBox = piecesBox;
         this.piecesBox = new HashSet<>();
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
-
+        this.isSolved = isSolved;
 
         initializeGraph();
     }
