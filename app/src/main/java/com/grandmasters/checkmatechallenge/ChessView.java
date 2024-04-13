@@ -181,6 +181,35 @@ public class ChessView extends View {
         canvas.drawRect(left, top, right, bottom, paint);
     }
 
+    public Square getKingPosition(){
+        Square kingPosition = null;
+        int cols = chessDelegate.getColumns();
+        int rows = chessDelegate.getRows();
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+                ChessPiece piece = chessDelegate.pieceAt(new Square(col, row));
+                if (piece != null && piece.getPieceType() == ChessPieceType.KING) {
+                    return new Square(col, row);
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean isCheckMate(Square kingPos){
+        boolean checkFlag = false;
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+//                ChessPiece piece = chessDelegate.pieceAt(new Square(col, row));
+                if (chessDelegate.canKingMove(kingPos, new Square(col, row))) {
+                    checkFlag = true;
+                    continue;
+                }
+            }
+        }
+        return !checkFlag;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
@@ -205,11 +234,20 @@ public class ChessView extends View {
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving
+                        Square kingPos = getKingPosition();
 
+                        boolean checkMate = isCheckMate(kingPos);
+                        if(checkMate){
+                            Log.d(TAG, "CHECKMATE!!!!!");
+                        }
                         boolean whiteKingInCheck = chessDelegate.isKingInCheck(ChessPlayer.WHITE);
                         boolean blackKingInCheck = chessDelegate.isKingInCheck(ChessPlayer.BLACK);
+
                         if (whiteKingInCheck || blackKingInCheck) {
                             Log.d(TAG, "Check!!!!!!!!!");
+//                            if(!kingInCheckMate){
+//                                Log.d(TAG, "CHECKMATE");
+//                            }
                         }
                     } else {
                         // If the clicked cell is not empty, select it
