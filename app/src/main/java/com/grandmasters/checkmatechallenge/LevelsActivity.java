@@ -18,6 +18,7 @@ import androidx.cardview.widget.CardView;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class LevelsActivity extends AppCompatActivity {
     private MiniChessView miniChessView;
@@ -40,50 +41,15 @@ public class LevelsActivity extends AppCompatActivity {
             if (columnCount == 3) {
                 columnCount = 0;
             }
+            Set<ChessPiece> originalPieces = level.getPiecesBox();
+            Set<ChessPiece> copiedPieces = level.deepCopySet(originalPieces);
+            level.setPiecesBoxOriginalState(copiedPieces);
+
             CardView cardView = createCardView(level);
             levelsGrid.addView(cardView);
             columnCount++;
         }
     }
-
-//    private CardView createCardView(ChessLevel level) {
-//
-//        // Inflate the custom card layout directly into a View
-//        View cardViewLayout = LayoutInflater.from(this).inflate(R.layout.custom_card_layout, null);
-//
-//        // Find the CardView inside the inflated layout
-//        CardView cardView = cardViewLayout.findViewById(R.id.cardView);
-//
-//        // Find views inside the custom layout
-//        ChessView chessView = cardViewLayout.findViewById(R.id.chess_view);
-//
-//        // Inflate the custom card layout
-////        View cardView = LayoutInflater.from(this).inflate(R.layout.custom_card_layout, null);
-//
-//        // Inflate the custom card layout directly into a View
-////        View cardViewLayout = LayoutInflater.from(this).inflate(R.layout.custom_card_layout, null);
-//
-//        // Find the CardView inside the inflated layout
-////        CardView cardView = cardViewLayout.findViewById(R.id.cardView);
-//
-//        // Find views inside the custom layout
-////        ChessView chessView = cardView.findViewById(R.id.chess_view);
-//        // Add other views here
-//
-//        // Setup ChessView (if needed)
-//        chessView.setChessDelegate(level);
-//        CardView card = (CardView) cardViewLayout;
-//        // Create a CardView and set the custom layout as its content
-////        CardView card = new CardView(this);
-//        card.setLayoutParams(new CardView.LayoutParams(
-//                CardView.LayoutParams.MATCH_PARENT,
-//                CardView.LayoutParams.WRAP_CONTENT)); // Set the CardView's layout parameters
-//        card.addView(cardView);
-////        card.setLayoutParams(new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.WRAP_CONTENT));
-////        card.addView(cardView);
-//
-//        return card;
-//    }
 
     private CardView createCardView(ChessLevel level) {
         CardView cardView = new CardView(this);
@@ -99,6 +65,9 @@ public class LevelsActivity extends AppCompatActivity {
         TextView textView = new TextView(getApplicationContext(), null);
         textView.setText(String.valueOf(level.getLevelId()));
         textView.setTextColor(Color.parseColor("White"));
+
+        ImageView tickIcon = new ImageView(this);
+        tickIcon.setImageResource(R.drawable.icons8_lock);
 //        textView.style
         int firstUnsolvedId = dataManager.getUnsolvedLevelId();
         if(level.isSolved() || level.getLevelId() == firstUnsolvedId) {
@@ -106,7 +75,15 @@ public class LevelsActivity extends AppCompatActivity {
             MiniChessView miniChessView = new MiniChessView(this, null);
             miniChessView.setChessDelegate(level);
             if(level.isSolved()) {
-
+                // Create an ImageView for the check icon
+                ImageView checkIcon = new ImageView(this);
+                checkIcon.setImageResource(R.drawable.icons8_checkmark); // Replace R.drawable.check_icon with the actual resource ID of your check icon
+                // Set layout parameters for the check icon
+                CardView.LayoutParams checkParams = new CardView.LayoutParams(CardView.LayoutParams.WRAP_CONTENT, CardView.LayoutParams.WRAP_CONTENT);
+                checkParams.gravity = Gravity.TOP | Gravity.END; // Position the icon at the top right corner
+                checkIcon.setLayoutParams(checkParams);
+                // Add the check icon to the CardView
+                cardView.addView(checkIcon);
             }
             cardView.addView(miniChessView);
             cardView.addView(textView);
@@ -128,8 +105,8 @@ public class LevelsActivity extends AppCompatActivity {
         cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                openMainActivityWithLevel(level);
-                finish();
+                openMainActivityWithLevel(level);
+//                finish();
             }
         });
 
@@ -140,6 +117,7 @@ public class LevelsActivity extends AppCompatActivity {
         // Start MainActivity with the selected level
         Intent intent = new Intent(LevelsActivity.this, MainActivity.class);
         intent.putExtra("SELECTED_LEVEL", level);
-        LevelsActivity.this.startActivity(intent);
+        startActivity(intent);
+        finish();
     }
 }

@@ -91,6 +91,39 @@
         android:background="@drawable/matrix"
         android:text="" />
 
+    <TextView
+        android:id="@+id/level_name"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:layout_above="@+id/buttonsLayout"
+        android:layout_alignTop="@id/levels_btn"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentEnd="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="141dp"
+        android:layout_marginTop="-1dp"
+        android:layout_marginEnd="140dp"
+        android:layout_marginBottom="509dp"
+        android:text="Level"
+        android:textAlignment="center"
+        android:textFontWeight="8000" />
+
+    <TextView
+        android:id="@+id/mate"
+        android:layout_width="142dp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/level_name"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="133dp"
+        android:layout_marginBottom="-69dp"
+        android:gravity="center"
+        android:text="Mate in 2" />
+
 </RelativeLayout>
 
 
