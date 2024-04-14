@@ -180,7 +180,7 @@ package com.grandmasters.checkmatechallenge;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -192,9 +192,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import android.content.Context;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     private ChessView chessView;
+    private TextView levelName;
+    private TextView mate;
+    ChessLevel currentlevel;
     private Context context;
     private List<ChessLevel> gameLevels;
     private Set<ChessPiece> pieces = new HashSet<>();
@@ -213,30 +217,37 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         Intent intent = getIntent();
-        if(intent.hasExtra("SELECTED_LEVEL")) {
-            key = intent.getSerializableExtra("SELECTED_LEVEL");
-            Log.d(TAG, String.valueOf(key));
-        }
         chessView = findViewById(R.id.chess_view);
+        levelName = findViewById(R.id.level_name);
+        mate = findViewById(R.id.mate);
         dataManager = new DataManager(getApplicationContext());
         // Retrieve chess level from DataManager and set the ChessDelegate
-        ChessLevel level = dataManager.getChessLevel(dataManager.getUnsolvedLevelId());
+        currentlevel = dataManager.getChessLevel(dataManager.getUnsolvedLevelId());
         // Retrieve selected level from intent extras
         if (intent != null && intent.hasExtra("SELECTED_LEVEL")) {
-            ChessLevel selectedLevel = (ChessLevel) intent.getSerializableExtra("SELECTED_LEVEL");
-            if (selectedLevel != null) {
+            currentlevel = (ChessLevel) intent.getSerializableExtra("SELECTED_LEVEL");
+            if (currentlevel != null) {
                 // Set the selected level to the ChessView
-                chessView.setChessDelegate(selectedLevel);
-                Log.d(TAG, String.valueOf(selectedLevel.getLevelId()));
+                currentlevel.resetLevel();
+                chessView.setChessDelegate(currentlevel);
+                levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
+                levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+                mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
             }
         }
         else {
-            chessView.setChessDelegate(level);
+            chessView.setChessDelegate(currentlevel);
+            levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
+            levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+//            mate.setText("Level " + String.valueOf(currentlevel.getLevelId()));
+            mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            chessView.setChessDelegate(currentlevel);
         }
         findViewById(R.id.resetButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                level.resetLevel();
+                currentlevel.resetLevel();
+                chessView.setChessDelegate(currentlevel);
                 chessView.invalidate();
             }
         });
@@ -244,7 +255,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.undoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                level.undoLastMove();
+                currentlevel.undoLastMove();
+                chessView.setChessDelegate(currentlevel);
                 chessView.invalidate();
             }
         });

@@ -1,8 +1,9 @@
 package com.grandmasters.checkmatechallenge;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Square {
+public class Square implements Serializable {
     private int col;
     private int row;
 

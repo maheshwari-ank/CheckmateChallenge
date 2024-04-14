@@ -1,7 +1,9 @@
 package com.grandmasters.checkmatechallenge;
 
 
-public class ChessPiece {
+import java.io.Serializable;
+
+public class ChessPiece implements Serializable {
     private int row;
     private int col;
     private ChessPlayer player;

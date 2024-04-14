@@ -1,8 +1,9 @@
 package com.grandmasters.checkmatechallenge;
 
+import java.io.Serializable;
 import java.util.*;
 
-class Graph {
+class Graph implements Serializable {
 
     private Map<Square, List<Square>> adjacencyMap;
 

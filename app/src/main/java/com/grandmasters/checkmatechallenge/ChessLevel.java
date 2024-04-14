@@ -78,11 +78,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
         this.piecesBox = new HashSet<>();
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
         this.isSolved = isSolved;
-
         initializeGraph();
     }
 
-    private void initializeGraph() {
+    public void initializeGraph() {
         boardGraph = new Graph();
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
@@ -91,12 +90,18 @@ public class ChessLevel implements ChessDelegate, Serializable {
         }
     }
     public void resetLevel() {
+
+//        for (Square vertex : boardGraph.getVertices()) {
+//            boardGraph.removeEdgesFromVertex(vertex);
+//        }
         piecesBox.clear();
         moves.removeAllElements();
 //        piecesBox.addAll(deepCopySet(piecesBoxOriginalState));
         for (ChessPiece originalPiece : piecesBoxOriginalState) {
             piecesBox.add(new ChessPiece(originalPiece));
         }
+        initializeGraph();
+
     }
 
     public void addPiece(ChessPiece piece) {
@@ -317,12 +322,11 @@ public class ChessLevel implements ChessDelegate, Serializable {
             king.setRow(toSquare.getRow());
             king.setCol(toSquare.getCol());
             // Simulate the move
-//            movePiece(fromSquare, toSquare);
-            boolean kingInCheck = isKingInCheck(king.getPlayer());
+
+            boolean kingInCheck = isKingInCheck(king);
             // Undo the move
             king.setRow(fromSquare.getRow());
             king.setCol(fromSquare.getCol());
-//            movePiece(toSquare, fromSquare);
             if (destinationPiece != null) {
                 // Restore the destination piece if it was captured
                 piecesBox.add(destinationPiece);
@@ -344,13 +348,13 @@ public class ChessLevel implements ChessDelegate, Serializable {
 //        return false;
 //    }
 
-    public boolean isKingInCheck(ChessPlayer player) {
+    public boolean isKingInCheck(ChessPiece king) {
         // Find the king's position
         Square kingPosition = null;
         for (int col = 0; col < columns; col++) {
             for (int row = 0; row < rows; row++) {
                 ChessPiece piece = pieceAt(new Square(col, row));
-                if (piece != null && piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == player) {
+                if (piece != null && piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == king.getPlayer()) {
                     kingPosition = new Square(col, row);
                     break;
                 }
@@ -364,8 +368,8 @@ public class ChessLevel implements ChessDelegate, Serializable {
         for (int col = 0; col < columns; col++) {
             for (int row = 0; row < rows; row++) {
                 ChessPiece piece = pieceAt(new Square(col, row));
-                if (piece != null && piece.getPlayer() != player) {
-                    if (canPieceMove(new Square(col, row), kingPosition)) {
+                if (piece != null && piece.getPlayer() != king.getPlayer()) {
+                    if (canPieceMove(new Square(col, row), new Square(king.getCol(), king.getRow()))) {
                         return true;
                     }
                 }
@@ -433,7 +437,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
         return this.columns;
     }
 
-    private Set<ChessPiece> deepCopySet(Set<ChessPiece> originalSet) {
+    public Set<ChessPiece> deepCopySet(Set<ChessPiece> originalSet) {
         Set<ChessPiece> copySet = new HashSet<>();
         for (ChessPiece piece : originalSet) {
             copySet.add(new ChessPiece(piece));
