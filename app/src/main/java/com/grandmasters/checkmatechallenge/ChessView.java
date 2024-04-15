@@ -262,9 +262,17 @@ public class ChessView extends View {
         }
 
         Set<ChessPiece> pieces = chessDelegate.getPiecesBox();
+        ChessPlayer kingColor = null;
+        for(ChessPiece piece: pieces) {
+            if (piece.getPieceType() == ChessPieceType.KING) {
+                kingColor = piece.getPlayer();
+            }
+        }
         if(!kingCanMove) {
+            Set<ChessPiece> kingSidePieces = new HashSet<ChessPiece>();
             for(ChessPiece piece: pieces) {
-                if(piece.getPlayer() == ChessPlayer.BLACK && piece.getPieceType() != ChessPieceType.KING) {
+                if(piece.getPlayer() == kingColor && piece.getPieceType() != ChessPieceType.KING) {
+                    kingSidePieces.add(piece);
                     for (int c = 0; c < chessDelegate.getColumns(); c++) {
                         for (int r = 0; r < chessDelegate.getRows(); r++) {
                             if (chessDelegate.canPieceMove(new Square(piece.getCol(), piece.getRow()), new Square(c, r))) {
@@ -273,8 +281,27 @@ public class ChessView extends View {
                             }
                         }
                     }
-                    List<Square> rooklist = boardGraph.getAdjacentVertices(new Square(piece.getCol(), piece.getRow()));
-                    for(Square square: rooklist) {
+
+                    List<Square> piecelist = boardGraph.getAdjacentVertices(new Square(piece.getCol(), piece.getRow()));
+                    for(ChessPiece kingSidePiece : kingSidePieces) {
+                        Square kingSidePieceSquare = new Square(kingSidePiece.getCol(), kingSidePiece.getRow());
+                        List<Square> kingSidePieceList = boardGraph.getAdjacentVertices(kingSidePieceSquare);
+                        boolean canBlockCheck = false;
+                        for(Square square : kingSidePieceList) {
+                            if(chessDelegate.pieceAt(square) == chessDelegate.pieceAt(newSource)) {
+                                // Check if the kingSidePiece can move to the square without capturing the opponent's piece
+                                if(chessDelegate.canPieceMove(kingSidePieceSquare, square) && chessDelegate.pieceAt(square) == null) {
+                                    canBlockCheck = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(canBlockCheck) {
+                            // If a kingSidePiece can block the check without capturing the opponent's piece, return false
+                            return false;
+                        }
+                    }
+                    for(Square square: piecelist) {
                         if(chessDelegate.pieceAt(square) == chessDelegate.pieceAt(newSource)) {
                             return false;
                         }
