@@ -1,6 +1,8 @@
 package com.grandmasters.checkmatechallenge;
 
 import android.util.Log;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,8 +116,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
         int rows = square.getRow();
         return column >= 0 && column < this.columns && rows >= 0 && rows < this.rows;
     }
-//    public void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
-
 
     public void movePiece(Square fromSquare, Square toSquare) {
         if (canPieceMove(fromSquare, toSquare)) {
@@ -247,7 +247,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
     public boolean checkDiagonal(Square fromSquare, Square toSquare){
         ChessPiece piece = pieceAt(new Square(fromSquare.getCol(), fromSquare.getRow()));
         int gapRow = 0;
-        if(piece.getPlayer().equals(ChessPlayer.BLACK)) {
+        if(piece.getPlayer().equals(ChessPlayer.WHITE)) {
              gapRow = toSquare.getRow() - fromSquare.getRow() - 1;
         }
         else{
@@ -266,7 +266,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
     public boolean canPawnMove(Square fromSquare, Square toSquare) {
         ChessPiece piece = pieceAt(new Square(fromSquare.getCol(), fromSquare.getRow()));
-        if(piece.getPlayer().equals(ChessPlayer.BLACK)){
+        if(piece.getPlayer().equals(ChessPlayer.WHITE)){
             if ((toSquare.getRow() - fromSquare.getRow() == 1 && toSquare.getCol() == fromSquare.getCol() &&
                     isClearFront(fromSquare, toSquare)) || checkDiagonal(fromSquare, toSquare)) {
                 return true;

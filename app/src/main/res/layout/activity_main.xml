@@ -111,17 +111,18 @@
 
     <TextView
         android:id="@+id/mate"
-        android:layout_width="142dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/level_name"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentEnd="false"
+        android:layout_centerInParent="false"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="136dp"
+        android:layout_centerVertical="false"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="133dp"
         android:layout_marginBottom="-69dp"
-        android:gravity="center"
+        android:gravity="center_horizontal"
         android:text="Mate in 2" />
 
 </RelativeLayout>

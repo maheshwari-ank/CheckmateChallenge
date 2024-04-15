@@ -42,6 +42,10 @@ public class ChessView extends View {
     private Graph boardGraph;
     private boolean bidirectional;
     private Square newSource;
+    private boolean playerTurn = true;
+    private boolean opponentTurn = false;
+    private ChessLevel currentLevel;
+
     public ChessView(Context context, AttributeSet attrs) {
         super(context, attrs);
         getImgResIds();
@@ -52,6 +56,18 @@ public class ChessView extends View {
 
     }
 
+    // Define an interface for checkmate callback
+    public interface OnCheckmateListener {
+        void onCheckmate();
+    }
+
+    // Declare a member variable to hold the listener
+    private OnCheckmateListener checkmateListener;
+
+    // Setter method for the listener
+    public void setOnCheckmateListener(OnCheckmateListener listener) {
+        this.checkmateListener = listener;
+    }
     // Method Get Chess Pieces Resource Ids and save them in a Hash set
     private void getImgResIds() {
         imgResIds.add(R.drawable.queen_white);
@@ -189,7 +205,7 @@ public class ChessView extends View {
 
     public Square getKingPosition(){
         for(Square square : boardGraph.getVertices()) {
-            if (chessDelegate.pieceAt(square) != null && chessDelegate.pieceAt(square).getPieceType() == ChessPieceType.KING) {
+            if (chessDelegate.pieceAt(square) != null && chessDelegate.pieceAt(square).getPieceType() == ChessPieceType.KING && chessDelegate.pieceAt(square).getPlayer() == ChessPlayer.BLACK) {
                 return square;
             }
         }
@@ -342,13 +358,16 @@ public class ChessView extends View {
                             Log.d(TAG, "King in Check!");
                             if(checkMate(newSource)){
                                 Log.d(TAG, "Checkmate!");
+                                checkmateListener.onCheckmate();
                             }
                         }
 
-
+                        playerTurn = false;
+                        opponentTurn = true;
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving
+
                     } else {
                         // If the clicked cell is not empty, select it
                         if (chessDelegate.pieceAt(new Square(clickedCol, clickedRow)) != null) {
@@ -358,7 +377,6 @@ public class ChessView extends View {
                         }
                     }
                 }
-
                 break;
         }
         return true;
@@ -417,6 +435,10 @@ public class ChessView extends View {
         for (Square vertex : boardGraph.getVertices()) {
             boardGraph.removeEdgesFromVertex(vertex);
         }
+    }
+
+    public void setCurrentLevel(ChessLevel level) {
+        this.currentLevel = level;
     }
 }
 
