@@ -29,7 +29,8 @@ public class LevelsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_levels);
-        dataManager = new DataManager(getApplicationContext());
+//        dataManager = new DataManager(getApplicationContext());
+        dataManager = DataManagerSingleton.getInstance(getApplicationContext());
         levelsGrid = findViewById(R.id.levels_grid);
 
         // Fetch levels from the database, assuming you have a method to do so

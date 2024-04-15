@@ -179,9 +179,12 @@
 package com.grandmasters.checkmatechallenge;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -192,15 +195,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import android.content.Context;
+import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ChessView.OnCheckmateListener {
     private ChessView chessView;
     private TextView levelName;
     private TextView mate;
     ChessLevel currentlevel;
     private Context context;
-    private List<ChessLevel> gameLevels;
+//    private List<ChessLevel> gameLevels;
     private Set<ChessPiece> pieces = new HashSet<>();
     private DataManager dataManager;
     private Serializable key;
@@ -218,9 +222,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Intent intent = getIntent();
         chessView = findViewById(R.id.chess_view);
+        chessView.setOnCheckmateListener(this);
         levelName = findViewById(R.id.level_name);
         mate = findViewById(R.id.mate);
-        dataManager = new DataManager(getApplicationContext());
+//        dataManager = new DataManager(getApplicationContext());
+        dataManager = DataManagerSingleton.getInstance(getApplicationContext());
+
         // Retrieve chess level from DataManager and set the ChessDelegate
         currentlevel = dataManager.getChessLevel(dataManager.getUnsolvedLevelId());
         // Retrieve selected level from intent extras
@@ -229,9 +236,10 @@ public class MainActivity extends AppCompatActivity {
             if (currentlevel != null) {
                 // Set the selected level to the ChessView
                 chessView.setChessDelegate(currentlevel);
+                chessView.setCurrentLevel(currentlevel);
                 levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
-                levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-                mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             }
         }
         else {
@@ -240,8 +248,9 @@ public class MainActivity extends AppCompatActivity {
             levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
             levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
 //            mate.setText("Level " + String.valueOf(currentlevel.getLevelId()));
-            mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             chessView.setChessDelegate(currentlevel);
+            chessView.setCurrentLevel(currentlevel);
         }
         findViewById(R.id.resetButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -276,4 +285,58 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    // Implement the onCheckmate method of the OnCheckmateListener interface
+    @Override
+    public void onCheckmate() {
+        // Display the "Checkmate" message in your TextView
+        TextView mate = findViewById(R.id.mate);
+        mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+        mate.setText("Checkmate!");
+        dataManager.getChessLevel(currentlevel.getLevelId()).setSolved(true);
+        findViewById(R.id.hintButton).setVisibility(View.GONE);
+        findViewById(R.id.resetButton).setVisibility(View.GONE);
+        findViewById(R.id.undoButton).setVisibility(View.GONE);
+
+        // Add the "Next" button dynamically
+        Button nextButton = new Button(this);
+        nextButton.setText("Next");
+        nextButton.setTextColor(Color.BLACK);
+        nextButton.setBackgroundColor(Color.WHITE);
+        nextButton.setBackgroundResource(R.drawable.rounded_button_background);
+        nextButton.setWidth(500);
+        nextButton.setHeight(200);
+        nextButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Set text size
+        nextButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)); // Set layout parameters
+
+        ((ViewGroup) findViewById(R.id.buttonsLayout)).addView(nextButton);
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle the "Next" button click event, e.g., move to the next level
+                moveNextLevel();
+            }
+        });
+    }
+    private void moveNextLevel() {
+        // Assuming you have a list of levels and you want to move to the next level in the list
+        // You need to keep track of the current level index
+        int nextLevelIndex = currentlevel.getLevelId() + 1; // Increment the current level index
+        if (nextLevelIndex <= dataManager.getAllLevels().size()) {
+            // If there are more levels available, start the next level
+            ChessLevel nextLevel = dataManager.getChessLevel(nextLevelIndex);
+            startNextLevel(nextLevel);
+        } else {
+            // If there are no more levels available, do something (e.g., display a message)
+            // For now, let's just log a message
+            Log.d(TAG, "No more levels available");
+        }
+    }
+
+    private void startNextLevel(ChessLevel nextLevel) {
+        // Start the next level
+        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+        intent.putExtra("SELECTED_LEVEL", nextLevel);
+        startActivity(intent);
+        finish();
+    }
 }
