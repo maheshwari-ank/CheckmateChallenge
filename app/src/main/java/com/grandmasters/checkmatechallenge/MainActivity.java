@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
     private TextView mate;
     ChessLevel currentlevel;
     private Context context;
+    private DatabaseHelper dbHelper;
 //    private List<ChessLevel> gameLevels;
     private Set<ChessPiece> pieces = new HashSet<>();
     private DataManager dataManager;
@@ -212,7 +213,6 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().getDecorView().setSystemUiVisibility(
@@ -227,9 +227,9 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         mate = findViewById(R.id.mate);
 //        dataManager = new DataManager(getApplicationContext());
         dataManager = DataManagerSingleton.getInstance(getApplicationContext());
-
+        dbHelper = DbHelperSingleton.getInstance(context);
         // Retrieve chess level from DataManager and set the ChessDelegate
-        currentlevel = dataManager.getChessLevel(dataManager.getUnsolvedLevelId());
+        currentlevel = dataManager.getChessLevel(dbHelper.getFirstUnsolvedLevelId());
         // Retrieve selected level from intent extras
         if (intent != null && intent.hasExtra("SELECTED_LEVEL")) {
             currentlevel = (ChessLevel) intent.getSerializableExtra("SELECTED_LEVEL");
@@ -336,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         // Start the next level
         Intent intent = new Intent(MainActivity.this, MainActivity.class);
         intent.putExtra("SELECTED_LEVEL", nextLevel);
+        dataManager.updateCurrentLevel(nextLevel);
         startActivity(intent);
         finish();
     }

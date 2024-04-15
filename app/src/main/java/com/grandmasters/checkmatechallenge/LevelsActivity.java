@@ -24,7 +24,7 @@ public class LevelsActivity extends AppCompatActivity {
     private MiniChessView miniChessView;
     private GridLayout levelsGrid;
     private DataManager dataManager;
-
+    private ChessLevel currentLevel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
