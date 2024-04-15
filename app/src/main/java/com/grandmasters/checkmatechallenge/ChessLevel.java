@@ -91,9 +91,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
     }
     public void resetLevel() {
 
-//        for (Square vertex : boardGraph.getVertices()) {
-//            boardGraph.removeEdgesFromVertex(vertex);
-//        }
         piecesBox.clear();
         moves.removeAllElements();
 //        piecesBox.addAll(deepCopySet(piecesBoxOriginalState));
@@ -101,6 +98,9 @@ public class ChessLevel implements ChessDelegate, Serializable {
             piecesBox.add(new ChessPiece(originalPiece));
         }
         initializeGraph();
+        for (Square vertex : boardGraph.getVertices()) {
+            boardGraph.removeEdgesFromVertex(vertex);
+        }
 
     }
 
@@ -321,8 +321,12 @@ public class ChessLevel implements ChessDelegate, Serializable {
             ChessPiece destinationPiece = pieceAt(toSquare);
             king.setRow(toSquare.getRow());
             king.setCol(toSquare.getCol());
-            // Simulate the move
 
+            // Simulate the move
+            if (destinationPiece != null) {
+                // Restore the destination piece if it was captured
+                piecesBox.remove(destinationPiece);
+            }
             boolean kingInCheck = isKingInCheck(king);
             // Undo the move
             king.setRow(fromSquare.getRow());
@@ -350,31 +354,38 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
     public boolean isKingInCheck(ChessPiece king) {
         // Find the king's position
-        Square kingPosition = null;
-        for (int col = 0; col < columns; col++) {
-            for (int row = 0; row < rows; row++) {
-                ChessPiece piece = pieceAt(new Square(col, row));
-                if (piece != null && piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == king.getPlayer()) {
-                    kingPosition = new Square(col, row);
-                    break;
-                }
+//        Square kingPosition = null;
+//        for (int col = 0; col < columns; col++) {
+//            for (int row = 0; row < rows; row++) {
+//                ChessPiece piece = pieceAt(new Square(col, row));
+//                if (piece != null && piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == king.getPlayer()) {
+//                    kingPosition = new Square(col, row);
+//                    break;
+//                }
+//            }
+//            if (kingPosition != null) break;
+//        }
+//
+//        if (kingPosition == null) return false; // King not found, should not happen in a valid chess game
+        Set <ChessPiece> pieces = getPiecesBox();
+        for (ChessPiece piece: pieces) {
+            Square fromSquare = new Square(piece.getCol(), piece.getRow());
+            Square toSquare = new Square(king.getCol(), king.getRow());
+            if (canPieceMove(fromSquare, toSquare)) {
+                return true;
             }
-            if (kingPosition != null) break;
         }
-
-        if (kingPosition == null) return false; // King not found, should not happen in a valid chess game
-
         // Iterate through opponent's pieces and check if any of them can attack the king
-        for (int col = 0; col < columns; col++) {
-            for (int row = 0; row < rows; row++) {
-                ChessPiece piece = pieceAt(new Square(col, row));
-                if (piece != null && piece.getPlayer() != king.getPlayer()) {
-                    if (canPieceMove(new Square(col, row), new Square(king.getCol(), king.getRow()))) {
-                        return true;
-                    }
-                }
-            }
-        }
+//        for (int col = 0; col < columns; col++) {
+//            for (int row = 0; row < rows; row++) {
+//                ChessPiece piece = pieceAt(new Square(col, row));
+//                if (piece != null && piece.getPlayer() != king.getPlayer()) {
+//                    if (canPieceMove(new Square(col, row), new Square(king.getCol(), king.getRow()))) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
 
         return false;
     }

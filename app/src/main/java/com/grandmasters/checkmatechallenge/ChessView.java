@@ -240,7 +240,8 @@ public class ChessView extends View {
         // Add edges to the graph based on possible moves
         for (int c = 0; c < chessDelegate.getColumns(); c++) {
             for (int r = 0; r < chessDelegate.getRows(); r++) {
-                if (chessDelegate.canPieceMove(getKingPosition(), new Square(c, r))) {
+                Square kingPosition = getKingPosition();
+                if (chessDelegate.canPieceMove(kingPosition, new Square(c, r))) {
                     // Add an edge to the graph
                     boardGraph.addEdge(getKingPosition(), new Square(c, r), bidirectional);
                 }
@@ -316,6 +317,8 @@ public class ChessView extends View {
                                 Log.d(TAG, "Checkmate!");
                             }
                         }
+
+
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving

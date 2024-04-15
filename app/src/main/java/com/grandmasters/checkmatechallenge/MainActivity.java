@@ -228,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
             currentlevel = (ChessLevel) intent.getSerializableExtra("SELECTED_LEVEL");
             if (currentlevel != null) {
                 // Set the selected level to the ChessView
-                currentlevel.resetLevel();
                 chessView.setChessDelegate(currentlevel);
                 levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
                 levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
@@ -236,7 +235,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            chessView.setChessDelegate(currentlevel);
+//            currentlevel = dataManager.getChessLevel(2);
+//            chessView.setChessDelegate(currentlevel);
             levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
             levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
 //            mate.setText("Level " + String.valueOf(currentlevel.getLevelId()));
