@@ -3,6 +3,8 @@ package com.grandmasters.checkmatechallenge;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +20,7 @@ public class DataManager {
     private DatabaseHelper dbHelper;
     private Context context;
     private int unsolvedLevelId;
+    private ChessLevel currentLevel;
 
     public Map<Integer, ChessLevel> getDataMap() {
         return dataMap;
@@ -37,63 +40,64 @@ public class DataManager {
 
     public DataManager(Context context) {
         this.context = context;
-        dbHelper = new DatabaseHelper(context);
+        dbHelper = DbHelperSingleton.getInstance(context);
+//        dbHelper = new DatabaseHelper(context);
         insertAllLevels();
-//        dbHelper.insertLevel(4,3,false);
-//        dbHelper.insertChessPiece(1,2,0,"WHITE","QUEEN",R.drawable.queen_white);
         loadLevelsFromDatabase();
+        setOriginalStateForAllLevels();
         this.unsolvedLevelId = dbHelper.getFirstUnsolvedLevelId();
-        if (unsolvedLevelId != -1) {
-            ChessLevel unsolvedLevel = getChessLevel(unsolvedLevelId);
-            if (unsolvedLevel != null) {
-                Set<ChessPiece> originalPieces = unsolvedLevel.getPiecesBox();
-                Set<ChessPiece> copiedPieces = deepCopySet(originalPieces);
-                unsolvedLevel.setPiecesBoxOriginalState(copiedPieces);
-            } else {
-                // Handle if the unsolved level does not exist
-                Log.d(TAG,"Unsolved level does not exist.");
-            }
-        } else {
-            // Handle if no unsolved level is found
-            Log.d(TAG,"No unsolved level found.");
-        }
+//
+//        if (unsolvedLevelId != -1) {
+//            ChessLevel unsolvedLevel = getChessLevel(unsolvedLevelId);
+//            if (unsolvedLevel != null) {
+//                Set<ChessPiece> originalPieces = unsolvedLevel.getPiecesBox();
+//                Set<ChessPiece> copiedPieces = deepCopySet(originalPieces);
+//                unsolvedLevel.setPiecesBoxOriginalState(copiedPieces);
+//            } else {
+//                // Handle if the unsolved level does not exist
+//                Log.d(TAG,"Unsolved level does not exist.");
+//            }
+//        } else {
+//            // Handle if no unsolved level is found
+//            Log.d(TAG,"No unsolved level found.");
+//        }
     }
 
     private void insertAllLevels() {
-        if(dbHelper.insertLevel(1,4,2, false)!=-1) {
+        if(dbHelper.insertLevel(1,4,2, false, ChessPlayer.WHITE)!=-1 ) {
             dbHelper.insertChessPiece(1,0,0,"WHITE","QUEEN",R.drawable.queen_white);
             dbHelper.insertChessPiece(1,3,0,"BLACK","ROOK",R.drawable.rook_black);
             dbHelper.insertChessPiece(1,3,1,"BLACK","KING",R.drawable.king_black);
         }
 
-        if(dbHelper.insertLevel(2,4,2, false)!=-1) {
+        if(dbHelper.insertLevel(2,4,2, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(2, 1, 0, "WHITE", "BISHOP", R.drawable.bishop_white);
             dbHelper.insertChessPiece(2, 0, 1, "WHITE", "QUEEN", R.drawable.queen_white);
             dbHelper.insertChessPiece(2, 3, 0, "BLACK", "KING", R.drawable.king_black);
         }
 
-        if(dbHelper.insertLevel(3,4,2, false)!=-1) {
+        if(dbHelper.insertLevel(3,4,2, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(3, 1, 1, "WHITE", "KNIGHT", R.drawable.knight_white);
             dbHelper.insertChessPiece(3, 0, 0, "WHITE", "QUEEN", R.drawable.queen_white);
             dbHelper.insertChessPiece(3, 3, 1, "BLACK", "KING", R.drawable.king_black);
         }
-        if(dbHelper.insertLevel(4,4,3, false)!=-1) {
+        if(dbHelper.insertLevel(4,4,3, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(4, 0, 1, "WHITE", "BISHOP", R.drawable.bishop_white);
             dbHelper.insertChessPiece(4, 2, 0, "WHITE", "QUEEN", R.drawable.queen_white);
             dbHelper.insertChessPiece(4, 3, 2, "BLACK", "KING", R.drawable.king_black);
         }
-        if(dbHelper.insertLevel(5,4,3, false)!=-1) {
+        if(dbHelper.insertLevel(5,4,3, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(5, 1, 1, "WHITE", "KING", R.drawable.king_white);
             dbHelper.insertChessPiece(5, 2, 2, "WHITE", "ROOK", R.drawable.rook_white);
             dbHelper.insertChessPiece(5, 3, 0, "BLACK", "KING", R.drawable.king_black);
         }
-        if(dbHelper.insertLevel(6,4,3, false)!=-1) {
+        if(dbHelper.insertLevel(6,4,3, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(6, 2, 1, "BLACK", "PAWN", R.drawable.pawn_black);
             dbHelper.insertChessPiece(6, 2, 2, "BLACK", "PAWN", R.drawable.pawn_black);
             dbHelper.insertChessPiece(6, 0, 0, "WHITE", "ROOK", R.drawable.rook_white);
             dbHelper.insertChessPiece(6, 3, 2, "BLACK", "KING", R.drawable.king_black);
         }
-        if(dbHelper.insertLevel(7,4,3, false)!=-1) {
+        if(dbHelper.insertLevel(7,4,3, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(7, 2, 1, "BLACK", "PAWN", R.drawable.pawn_black);
             dbHelper.insertChessPiece(7, 2, 2, "BLACK", "PAWN", R.drawable.pawn_black);
             dbHelper.insertChessPiece(7, 3, 1, "BLACK", "ROOK", R.drawable.rook_black);
@@ -101,19 +105,24 @@ public class DataManager {
             dbHelper.insertChessPiece(7, 0, 0, "WHITE", "QUEEN", R.drawable.queen_white);
             dbHelper.insertChessPiece(7, 3, 2, "BLACK", "KING", R.drawable.king_black);
         }
-        if(dbHelper.insertLevel(8,4,3, false)!=-1) {
+        if(dbHelper.insertLevel(8,4,3, false, ChessPlayer.WHITE)!=-1) {
             dbHelper.insertChessPiece(8, 2, 0, "BLACK", "PAWN", R.drawable.pawn_black);
             dbHelper.insertChessPiece(8, 3, 1, "BLACK", "ROOK", R.drawable.rook_black);
             dbHelper.insertChessPiece(8, 1, 0, "WHITE", "BISHOP", R.drawable.bishop_white);
             dbHelper.insertChessPiece(8, 3, 2, "WHITE", "QUEEN", R.drawable.queen_white);
             dbHelper.insertChessPiece(8, 3, 0, "BLACK", "KING", R.drawable.king_black);
         }
+        if(dbHelper.insertLevel(9,4,3, false, ChessPlayer.WHITE)!=-1) {
+            dbHelper.insertChessPiece(9, 0, 0, "WHITE", "QUEEN", R.drawable.queen_white);
+            dbHelper.insertChessPiece(9, 1, 0, "WHITE", "ROOK", R.drawable.rook_white);
+            dbHelper.insertChessPiece(9, 3, 1, "BLACK", "KING", R.drawable.king_black);
+        }
     }
     private void loadLevelsFromDatabase() {
         // Load levels from the database
         List<ChessLevel> levelDataList = dbHelper.getAllLevels();
         for (ChessLevel levelData : levelDataList) {
-            ChessLevel chessLevel = new ChessLevel(levelData.getLevelId(), levelData.getRows(), levelData.getColumns(), levelData.isSolved());
+            ChessLevel chessLevel = new ChessLevel(levelData.getLevelId(), levelData.getRows(), levelData.getColumns(), levelData.isSolved(), levelData.getUserPlayer());
             dataMap.put(levelData.getLevelId(), chessLevel);
 
             // Load pieces for each level
@@ -139,9 +148,16 @@ public class DataManager {
         }
         return copySet;
     }
+    public void setOriginalStateForAllLevels() {
+        for (ChessLevel level : dataMap.values()) {
+            Set<ChessPiece> originalPieces = level.getPiecesBox();
+            Set<ChessPiece> copiedPieces = deepCopySet(originalPieces);
+            level.setPiecesBoxOriginalState(copiedPieces);
+        }
+    }
 
-    public void createChessLevel(int levelId, int rows, int columns, boolean isSolved) {
-        ChessLevel chessLevel = new ChessLevel(levelId, rows, columns, isSolved);
+    public void createChessLevel(int levelId, int rows, int columns, boolean isSolved, ChessPlayer userPlayer) {
+        ChessLevel chessLevel = new ChessLevel(levelId, rows, columns, isSolved, userPlayer);
         dataMap.put(levelId, chessLevel);
     }
 
@@ -162,5 +178,9 @@ public class DataManager {
 
     public List<ChessLevel> getAllLevels() {
         return new ArrayList<>(dataMap.values());
+    }
+
+    public void updateCurrentLevel(ChessLevel currentLevel) {
+        this.currentLevel = currentLevel;
     }
 }

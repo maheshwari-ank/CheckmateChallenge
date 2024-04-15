@@ -47,6 +47,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
     private int rows;
     private int columns;
     private boolean isSolved;
+    private ChessPlayer userPlayer;
     private Set<ChessPiece> piecesBox;
     private Set<ChessPiece> piecesBoxOriginalState;
     private Graph boardGraph;
@@ -70,7 +71,16 @@ public class ChessLevel implements ChessDelegate, Serializable {
     public ChessLevel() {
 
     }
-    public ChessLevel(int levelId, int rows, int columns, boolean isSolved){
+
+    public ChessPlayer getUserPlayer() {
+        return userPlayer;
+    }
+
+    public void setUserPlayer(ChessPlayer userPlayer) {
+        this.userPlayer = userPlayer;
+    }
+
+    public ChessLevel(int levelId, int rows, int columns, boolean isSolved, ChessPlayer userPlayer){
         if (columns > MAX_COLS || rows > MAX_ROWS) {
             throw new IllegalArgumentException("Number of columns or rows exceeds maximum limit.");
         }
@@ -80,6 +90,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
         this.piecesBox = new HashSet<>();
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
         this.isSolved = isSolved;
+        this.userPlayer = userPlayer;
         initializeGraph();
     }
 
@@ -99,10 +110,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
         for (ChessPiece originalPiece : piecesBoxOriginalState) {
             piecesBox.add(new ChessPiece(originalPiece));
         }
-        initializeGraph();
-        for (Square vertex : boardGraph.getVertices()) {
-            boardGraph.removeEdgesFromVertex(vertex);
-        }
+//        initializeGraph();
+//        for (Square vertex : boardGraph.getVertices()) {
+//            boardGraph.removeEdgesFromVertex(vertex);
+//        }
 
     }
 

@@ -46,7 +46,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "level_id INTEGER PRIMARY KEY," +
                 "rows INTEGER," +
                 "cols INTEGER," +
-                "is_solved Boolean)");
+                "is_solved Boolean," +
+                "user_player)");
 
         // Create the ChessPieces table
         db.execSQL("CREATE TABLE ChessPieces (" +
@@ -74,13 +75,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return levelId;
     }
 
-    public long insertLevel(int levelId, int rows, int cols, boolean isSolved) {
+    public long insertLevel(int levelId, int rows, int cols, boolean isSolved, ChessPlayer userPlayer) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("level_id", levelId);
         values.put("rows", rows);
         values.put("cols", cols);
         values.put("is_solved", isSolved);
+        values.put("user_player", userPlayer.name());
         long result = db.insert("Levels", null, values);
         db.close();
         return result;
@@ -111,6 +113,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 levelData.setRows(cursor.getInt(cursor.getColumnIndex("rows")));
                 levelData.setColumns(cursor.getInt(cursor.getColumnIndex("cols")));
                 levelData.setSolved(cursor.getInt(cursor.getColumnIndex("is_solved")) == 1);
+                levelData.setUserPlayer(ChessPlayer.valueOf(cursor.getString(cursor.getColumnIndex("user_player"))));
                 levelDataList.add(levelData);
             } while (cursor.moveToNext());
         }
