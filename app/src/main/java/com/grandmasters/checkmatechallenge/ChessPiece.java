@@ -4,12 +4,23 @@ package com.grandmasters.checkmatechallenge;
 import java.io.Serializable;
 
 public class ChessPiece implements Serializable {
+
     private int row;
     private int col;
     private ChessPlayer player;
     private ChessPieceType pieceType;
     private int pieceId;
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+
     private int levelId;
+    private int value;
 
     public int getLevelId() {
         return levelId;

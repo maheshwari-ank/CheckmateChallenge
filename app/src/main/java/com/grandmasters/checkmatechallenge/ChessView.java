@@ -45,6 +45,7 @@ public class ChessView extends View {
     private boolean playerTurn = true;
     private boolean opponentTurn = false;
     private ChessLevel currentLevel;
+    private final int maxDepth = 3;
 
     public ChessView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -265,13 +266,13 @@ public class ChessView extends View {
         }
         boolean kingCanMove = true;
         List<Square> kingList = boardGraph.getAdjacentVertices(getKingPosition());
-        if(kingList.stream().count() == 0) {
+        if (kingList.stream().count() == 0) {
             kingCanMove = false;
         }
 
-        if(kingCanMove) {
-            for(Square square: kingList) {
-                if(chessDelegate.canPieceMove(getKingPosition(), square)) {
+        if (kingCanMove) {
+            for (Square square : kingList) {
+                if (chessDelegate.canPieceMove(getKingPosition(), square)) {
                     return false;
                 }
             }
@@ -279,56 +280,100 @@ public class ChessView extends View {
 
         Set<ChessPiece> pieces = chessDelegate.getPiecesBox();
         ChessPlayer kingColor = null;
-        for(ChessPiece piece: pieces) {
+        for (ChessPiece piece : pieces) {
             if (piece.getPieceType() == ChessPieceType.KING) {
                 kingColor = piece.getPlayer();
             }
         }
-        if(!kingCanMove) {
+        if (!kingCanMove) {
             Set<ChessPiece> kingSidePieces = new HashSet<ChessPiece>();
-            for(ChessPiece piece: pieces) {
-                if(piece.getPlayer() == kingColor && piece.getPieceType() != ChessPieceType.KING) {
-                    kingSidePieces.add(piece);
-                    for (int c = 0; c < chessDelegate.getColumns(); c++) {
-                        for (int r = 0; r < chessDelegate.getRows(); r++) {
-                            if (chessDelegate.canPieceMove(new Square(piece.getCol(), piece.getRow()), new Square(c, r))) {
-                                // Add an edge to the graph
-                                boardGraph.addEdge(new Square(piece.getCol(), piece.getRow()), new Square(c, r), bidirectional);
-                            }
-                        }
-                    }
 
-                    List<Square> piecelist = boardGraph.getAdjacentVertices(new Square(piece.getCol(), piece.getRow()));
-                    for(ChessPiece kingSidePiece : kingSidePieces) {
-                        Square kingSidePieceSquare = new Square(kingSidePiece.getCol(), kingSidePiece.getRow());
-                        List<Square> kingSidePieceList = boardGraph.getAdjacentVertices(kingSidePieceSquare);
-                        boolean canBlockCheck = false;
-                        for(Square square : kingSidePieceList) {
-                            if(chessDelegate.pieceAt(square) == chessDelegate.pieceAt(newSource)) {
-                                // Check if the kingSidePiece can move to the square without capturing the opponent's piece
-                                if(chessDelegate.canPieceMove(kingSidePieceSquare, square) && chessDelegate.pieceAt(square) == null) {
-                                    canBlockCheck = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if(canBlockCheck) {
-                            // If a kingSidePiece can block the check without capturing the opponent's piece, return false
-                            return false;
-                        }
-                    }
-                    for(Square square: piecelist) {
-                        if(chessDelegate.pieceAt(square) == chessDelegate.pieceAt(newSource)) {
-                            return false;
-                        }
-                    }
-                    return true;
+            for (ChessPiece piece : pieces) {
+                if (piece.getPlayer() == kingColor && piece.getPieceType() != ChessPieceType.KING) {
+                    kingSidePieces.add(piece);
                 }
             }
-            return true;
+
+            for (ChessPiece kingSidePiece : kingSidePieces) {
+                for (int c = 0; c < chessDelegate.getColumns(); c++) {
+                    for (int r = 0; r < chessDelegate.getRows(); r++) {
+                        if (chessDelegate.canPieceMove(new Square(kingSidePiece.getCol(), kingSidePiece.getRow()), new Square(c, r))) {
+                            // Add an edge to the graph
+                            boardGraph.addEdge(new Square(kingSidePiece.getCol(), kingSidePiece.getRow()), new Square(c, r), bidirectional);
+                        }
+                    }
+                }
+            }
+
+//            List<Square> piecelist = boardGraph.getAdjacentVertices(new Square(piece.getCol(), piece.getRow()));
+//            ChessPiece checkingPiece = chessDelegate.pieceAt(newSource);
+//            ChessPiece king = chessDelegate.pieceAt(getKingPosition());
+            for (ChessPiece kingSidePiece : kingSidePieces) {
+                Square kingSidePieceSquare = new Square(kingSidePiece.getCol(), kingSidePiece.getRow());
+                List<Square> kingSidePieceList = boardGraph.getAdjacentVertices(kingSidePieceSquare);
+                if(kingSidePieceList.stream().count() == 0) {
+                    continue;
+                }
+                for (Square square : kingSidePieceList) {
+                        if (chessDelegate.canPieceMove(kingSidePieceSquare, square)) {
+                            ChessPiece destinationPiece = chessDelegate.pieceAt(square);
+                            kingSidePiece.setCol(square.getCol());
+                            kingSidePiece.setRow(square.getRow());
+
+                            // Simulate the move
+                            if (destinationPiece != null) {
+                                // Restore the destination piece if it was captured
+                                chessDelegate.getPiecesBox().remove(destinationPiece);
+                            }
+                            ChessPiece king = chessDelegate.pieceAt(getKingPosition());
+                            boolean kingInCheck = chessDelegate.isKingInCheck(king);
+
+                            kingSidePiece.setCol(kingSidePieceSquare.getCol());
+                            kingSidePiece.setRow(kingSidePieceSquare.getRow());
+                            if (destinationPiece != null) {
+                                // Restore the destination piece if it was captured
+                                chessDelegate.getPiecesBox().add(destinationPiece);
+                            }
+
+                            // Return true if the king is not in check after the move
+                            if (!kingInCheck) {
+                                return false;
+                            }
+                        }
+                }
+            }
         }
-        return false;
+        return true;
     }
+
+//                    if(chessDelegate.pieceAt(square) == chessDelegate.pieceAt(newSource)) {
+//                        // Check if the kingSidePiece can move to the square without capturing the opponent's piece
+//                        if(chessDelegate.canPieceMove(kingSidePieceSquare, square) && chessDelegate.pieceAt(square) == null) {
+//                            canBlockCheck = true;
+//                            break;
+//                        }
+//                        else if(chessDelegate.pieceAt(square) != null) {
+//
+//                        }
+//                    }
+//                }
+//                if(canBlockCheck) {
+//                    // If a kingSidePiece can block the check without capturing the opponent's piece, return false
+//                    return false;
+//                }
+//            }
+//                    for(Square square: piecelist) {
+//                        if(chessDelegate.pieceAt(square) == chessDelegate.pieceAt(newSource)) {
+//                            return false;
+//                        }
+//                    }
+//                    return true;
+
+
+//            return true;
+
+//        return false;
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -359,11 +404,23 @@ public class ChessView extends View {
                             if(checkMate(newSource)){
                                 Log.d(TAG, "Checkmate!");
                                 checkmateListener.onCheckmate();
+                                playerTurn = false;
+                                opponentTurn = false;
+                            }
+                            else {
+                                opponentTurn = true;
                             }
                         }
+                        else {
+                            opponentTurn = true;
+                        }
 
-                        playerTurn = false;
-                        opponentTurn = true;
+
+                        if(opponentTurn) {
+                            makeAIMove();
+                        }
+
+
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving
@@ -381,6 +438,32 @@ public class ChessView extends View {
         }
         return true;
     }
+
+    private void makeAIMove() {
+        // Call findBestMove method to get the best move for the AI player
+        ChessMove bestMove = currentLevel.findBestMove(maxDepth, true); // You may need to define maxDepth
+
+        // Apply the best move on the chessboard
+        Square fromSquare = new Square(bestMove.getFromCol(), bestMove.getFromRow());
+        Square toSquare = new Square(bestMove.getToCol(), bestMove.getToRow());
+        chessDelegate.movePiece(fromSquare, toSquare);
+
+        // Check for checkmate
+        if (kingInCheck(toSquare)) {
+            Log.d(TAG, "King in Check!");
+            if (checkMate(toSquare)) {
+                Log.d(TAG, "Checkmate!");
+                checkmateListener.onCheckmate();
+            }
+        }
+
+        // Update turn flags
+        playerTurn = true;
+        opponentTurn = false;
+
+        invalidate(); // Redraw the view after AI move
+    }
+
 
     private void highlightPossibleMoves(Canvas canvas, int col, int row) {
         ChessPiece selectedPiece = chessDelegate.pieceAt(new Square(col, row));
