@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
 public class ChessView extends View{
@@ -45,7 +46,7 @@ public class ChessView extends View{
     public boolean userTurn = true;
     public boolean opponentTurn = false;
     private ChessLevel currentLevel;
-    private final int maxDepth = 3;
+    private final int maxDepth = 4;
 
     public ChessView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -417,6 +418,7 @@ public class ChessView extends View{
 
 //                        Log.d(TAG, String.valueOf(boardGraph.getAdjacentVertices(getKingPosition()).stream().count()));
                         if(opponentTurn) {
+//                            makeRandomMove();
                             makeAIMove();
                         }
 
@@ -438,7 +440,39 @@ public class ChessView extends View{
         return true;
     }
 
+    private void makeRandomMove() {
+        List<ChessMove> possibleBlackMoves = currentLevel.getAllPossibleMoves(ChessPlayer.BLACK);
+        if (!possibleBlackMoves.isEmpty()) {
+            Random random = new Random();
+            int randomIndex = random.nextInt(possibleBlackMoves.size());
+            ChessMove randomMove = possibleBlackMoves.get(randomIndex);
+
+            Square fromSquare = new Square(randomMove.getFromCol(), randomMove.getFromRow());
+            Square toSquare = new Square(randomMove.getToCol(), randomMove.getToRow());
+            chessDelegate.movePiece(fromSquare, toSquare);
+
+//            // Check for checkmate
+//            if (kingInCheck(toSquare)) {
+//                Log.d(TAG, "King in Check!");
+//                if (checkMate(toSquare)) {
+//                    Log.d(TAG, "Checkmate!");
+//                    checkmateListener.onCheckmate();
+//                }
+//            }
+
+            // Update turn flags
+            userTurn = true;
+            opponentTurn = false;
+            // Perform the random move
+            // For example: yourChessBoard.performMove(randomMove);
+        } else {
+            // Handle the case where there are no possible moves
+            System.out.println("No possible moves for black.");
+        }
+    }
+
     private void makeAIMove() {
+
 
         // Call findBestMove method to get the best move for the AI player
         ChessMove bestMove = currentLevel.findBestMove(maxDepth, true); // You may need to define maxDepth

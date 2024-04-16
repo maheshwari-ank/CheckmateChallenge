@@ -117,10 +117,6 @@ public class DataManager {
             dbHelper.insertChessPiece(9, 1, 0, "WHITE", "ROOK", R.drawable.rook_white);
             dbHelper.insertChessPiece(9, 3, 1, "BLACK", "KING", R.drawable.king_black);
         }
-        if(dbHelper.insertLevel(10,3,2, false, ChessPlayer.WHITE)!=-1) {
-            dbHelper.insertChessPiece(10, 0, 0, "WHITE", "QUEEN", R.drawable.queen_white);
-            dbHelper.insertChessPiece(10, 2, 1, "BLACK", "KING", R.drawable.king_black);
-        }
     }
     private void loadLevelsFromDatabase() {
         // Load levels from the database

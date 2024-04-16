@@ -15,19 +15,18 @@ import java.io.Serializable;
 public class ChessLevel implements ChessDelegate, Serializable {
 
     // Piece values
-//    private static final int PAWN_VALUE = 1;
-//    private static final int KNIGHT_VALUE = 3;
-//    private static final int BISHOP_VALUE = 3;
-//    private static final int ROOK_VALUE = 5;
-//    private static final int QUEEN_VALUE = 9;
-
-
     private static final int PAWN_VALUE = 100;
-    private static final int KNIGHT_VALUE = 320;
-    private static final int BISHOP_VALUE = 325;
+    private static final int KNIGHT_VALUE = 300;
+    private static final int BISHOP_VALUE = 300;
     private static final int ROOK_VALUE = 500;
-    private static final int QUEEN_VALUE = 975;
-    private static final int KING_VALUE = 32767;
+    private static final int QUEEN_VALUE = 900;
+
+//    private static final int PAWN_VALUE = 100;
+//    private static final int KNIGHT_VALUE = 320;
+//    private static final int BISHOP_VALUE = 325;
+//    private static final int ROOK_VALUE = 500;
+//    private static final int QUEEN_VALUE = 975;
+//    private static final int KING_VALUE = 32767;
 
     private static final int MAX_ROWS = 6;
     private static final int MAX_COLS = 5;
@@ -401,6 +400,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
 //
 //        if (kingPosition == null) return false; // King not found, should not happen in a valid chess game
         Set <ChessPiece> pieces = getPiecesBox();
+
         for (ChessPiece piece: pieces) {
             Square fromSquare = new Square(piece.getCol(), piece.getRow());
             Square toSquare = new Square(king.getCol(), king.getRow());
@@ -491,35 +491,39 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
     public List<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
         List<ChessMove> possibleMoves = new ArrayList<>();
-        Set<ChessPiece> playerPieces = getPiecesBox();
-        for (Square vertex : getBoardGraph().getVertices()) {
-            getBoardGraph().removeEdgesFromVertex(vertex);
-        }
-        for(ChessPiece piece: playerPieces) {
-            for (int c = 0; c < getColumns(); c++) {
-                for (int r = 0; r < getRows(); r++) {
-                    Square piecePosition = new Square(piece.getCol(), piece.getRow());
-                    if (canPieceMove(piecePosition, new Square(c, r))) {
-                        // Add an edge to the graph
-                        getBoardGraph().addEdge(piecePosition, new Square(c, r), true);
-                    }
-                }
-            }
+        Set<ChessPiece> playerPieces = new HashSet<>(getPiecesBox());
+        Square kingPosition = getKingPosition();
+        boolean isInCheck = false;
+
+        // Find the king's position
+//        for (ChessPiece piece : playerPieces) {
+//            if (piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == playerColor) {
+//                kingPosition = new Square(piece.getCol(), piece.getRow());
+//                break;
+//            }
+//        }
+
+        // Check if the king is in check
+        if (kingPosition != null) {
+            isInCheck = isKingInCheck(pieceAt(kingPosition));
         }
 
         // Iterate through all pieces belonging to the specified player
         for (ChessPiece piece : playerPieces) {
             // Check if the piece belongs to the specified player
             if (piece.getPlayer() == playerColor) {
-
+                Square piecePosition = new Square(piece.getCol(), piece.getRow());
+                getBoardGraph().removeEdgesFromVertex(piecePosition);
+                addEdgesForPiece(piece);
                 // Get the possible moves for the current piece
                 List<Square> possibleDestinations = getPossibleDestinations(piece);
 
                 // Filter out illegal moves
                 for (Square destination : possibleDestinations) {
-                    if (canPieceMove(new Square(piece.getCol(), piece.getRow()), destination)) {
-                        possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
-//                        getBoardGraph().addEdge(new Square(piece.getCol(), piece.getRow()), destination, true); // Adjust bidirectional as needed
+                    if (!isInCheck || canBlockOrCaptureToAvoidCheck(piecePosition, destination)) {
+                        if (canPieceMove(piecePosition, destination)) {
+                            possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
+                        }
                     }
                 }
             }
@@ -528,6 +532,81 @@ public class ChessLevel implements ChessDelegate, Serializable {
         return possibleMoves;
     }
 
+    private boolean canBlockOrCaptureToAvoidCheck(Square fromSquare, Square toSquare) {
+        // Check if moving the piece to the destination square can block or capture the piece giving check
+        ChessPiece movingPiece = pieceAt(fromSquare);
+        ChessPiece destinationPiece = pieceAt(toSquare);
+
+        // Simulate the move
+        movePiece(fromSquare, toSquare);
+
+//        if (destinationPiece != null) {
+//            // Restore the destination piece if it was captured
+//            getPiecesBox().remove(destinationPiece);
+//        }
+        // Check if the king is still in check after the move
+        boolean kingInCheck = isKingInCheck(pieceAt(getKingPosition()));
+
+        // Undo the move
+        undoLastMove();
+
+//        if (destinationPiece != null) {
+//            // Restore the destination piece if it was captured
+//            getPiecesBox().add(destinationPiece);
+//        }
+
+        // If the king is no longer in check after the move, it's valid to block or capture
+        return !kingInCheck;
+    }
+
+
+//    public List<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
+//        List<ChessMove> possibleMoves = new ArrayList<>();
+////        Set<ChessPiece> playerPieces = getPiecesBox();
+//        Set<ChessPiece> playerPieces = new HashSet<>(getPiecesBox());
+//
+//        // Iterate through all pieces belonging to the specified player
+//       for (ChessPiece piece : playerPieces) {
+//            // Check if the piece belongs to the specified player
+//            if (piece.getPlayer() == playerColor) {
+//                Square piecePosition = new Square(piece.getCol(), piece.getRow());
+//                getBoardGraph().removeEdgesFromVertex(piecePosition);
+//                addEdgesForPiece(piece);
+//                // Get the possible moves for the current piece
+//                List<Square> possibleDestinations = getPossibleDestinations(piece);
+//
+//                // Filter out illegal moves
+//                for (Square destination : possibleDestinations) {
+//                    if (canPieceMove(new Square(piece.getCol(), piece.getRow()), destination)) {
+//                        possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
+//                    }
+//                }
+//            }
+//        }
+//
+//        return possibleMoves;
+//    }
+
+    public Square getKingPosition(){
+        for(Square square : boardGraph.getVertices()) {
+            if (pieceAt(square) != null && pieceAt(square).getPieceType() == ChessPieceType.KING && pieceAt(square).getPlayer() == ChessPlayer.BLACK) {
+                return square;
+            }
+        }
+        return null;
+    }
+
+    private void addEdgesForPiece(ChessPiece piece) {
+        for (int c = 0; c < getColumns(); c++) {
+            for (int r = 0; r < getRows(); r++) {
+                Square piecePosition = new Square(piece.getCol(), piece.getRow());
+                if (canPieceMove(piecePosition, new Square(c, r))) {
+                    // Add an edge to the graph
+                    getBoardGraph().addEdge(piecePosition, new Square(c, r), true);
+                }
+            }
+        }
+    }
 
     private List<Square> getPossibleDestinations(ChessPiece piece) {
         List<Square> possibleDestinations = new ArrayList<>();
@@ -553,16 +632,23 @@ public class ChessLevel implements ChessDelegate, Serializable {
         // Get all possible moves for the opponent
         List<ChessMove> possibleBlackMoves = getAllPossibleMoves(ChessPlayer.BLACK);
 
+        if(possibleBlackMoves.stream().count() == 1) {
+            return possibleBlackMoves.get(0);
+        }
+
         // Loop through each possible move and evaluate its score using Minimax
         for (ChessMove move : possibleBlackMoves) {
             // Make the move
             Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
             Square toSquare = new Square(move.getToCol(), move.getToRow());
             movePiece(fromSquare, toSquare);
+
             // Evaluate the move using Minimax with alpha-beta pruning
             int score = minimax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, !maximizingPlayer);
             // Undo the move
             undoLastMove();
+
+
             // Update the best move and score
             if ((maximizingPlayer && score > bestScore) || (!maximizingPlayer && score < bestScore)) {
                 bestScore = score;
@@ -570,13 +656,14 @@ public class ChessLevel implements ChessDelegate, Serializable {
             }
         }
 
+
         // Return the best move found
         return bestMove;
     }
 
 
     private int minimax(int depth, int alpha, int beta, boolean maximizingPlayer) {
-        if (depth == 0 || isGameOver) {
+        if (depth == 0) {
             // If depth is 0 or game is over, evaluate the board position
             return evaluateBoard();
 //            return evaluation.evaluation();
@@ -588,6 +675,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
             List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.BLACK);
 
             for (ChessMove move : possibleMoves) {
+
                 // Make the move
                 Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
                 Square toSquare = new Square(move.getToCol(), move.getToRow());
@@ -619,6 +707,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
                 // Move piece
                 movePiece(fromSquare, toSquare);
+
 
                 // Recursively call minimax for the next level
                 int score = minimax(depth - 1, alpha, beta, true);
@@ -677,13 +766,13 @@ public class ChessLevel implements ChessDelegate, Serializable {
                     } else {
                         blackScore += QUEEN_VALUE;
                     }
-                case KING:
-                    if (piece.getPlayer() == ChessPlayer.WHITE) {
-                        whiteScore += KING_VALUE;
-                    } else {
-                        blackScore += KING_VALUE;
-                    }
-                    break;
+//                case KING:
+//                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+//                        whiteScore += KING_VALUE;
+//                    } else {
+//                        blackScore += KING_VALUE;
+//                    }
+//                    break;
                 // You may add the king value if necessary, but it's often not used in traditional evaluations
             }
         }
@@ -691,6 +780,22 @@ public class ChessLevel implements ChessDelegate, Serializable {
         // Return the difference between white and black scores
         return whiteScore - blackScore;
     }
+
+    private boolean isAttackingOpponentKing(ChessPiece piece) {
+        // Get the position of the opponent's king
+        Square opponentKingPosition = getKingPosition();
+
+        // Check if the given piece can move to the opponent's king position
+        List<Square> possibleMoves = getPossibleDestinations(piece);
+        for (Square destination : possibleMoves) {
+            if (destination.equals(opponentKingPosition)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     private boolean isGameOver() {
         // Implement the logic to check if the game is over
