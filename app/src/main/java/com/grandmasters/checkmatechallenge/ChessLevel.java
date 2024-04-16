@@ -15,15 +15,24 @@ import java.io.Serializable;
 public class ChessLevel implements ChessDelegate, Serializable {
 
     // Piece values
-    private static final int PAWN_VALUE = 1;
-    private static final int KNIGHT_VALUE = 3;
-    private static final int BISHOP_VALUE = 3;
-    private static final int ROOK_VALUE = 5;
-    private static final int QUEEN_VALUE = 9;
+//    private static final int PAWN_VALUE = 1;
+//    private static final int KNIGHT_VALUE = 3;
+//    private static final int BISHOP_VALUE = 3;
+//    private static final int ROOK_VALUE = 5;
+//    private static final int QUEEN_VALUE = 9;
+
+
+    private static final int PAWN_VALUE = 100;
+    private static final int KNIGHT_VALUE = 320;
+    private static final int BISHOP_VALUE = 325;
+    private static final int ROOK_VALUE = 500;
+    private static final int QUEEN_VALUE = 975;
+    private static final int KING_VALUE = 32767;
 
     private static final int MAX_ROWS = 6;
     private static final int MAX_COLS = 5;
     private static final String TAG = "ChessLevel";
+//    private Evaluation evaluation = new Evaluation();
 
     public int getLevelId() {
         return levelId;
@@ -50,6 +59,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
     }
 
     //    private String levelId;
+    private ChessView chessView;
     private int levelId;
     private int rows;
     private int columns;
@@ -61,7 +71,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
     public Set<ChessPiece> getPiecesBoxOriginalState() {
         return piecesBoxOriginalState;
     }
-
+    private boolean isGameOver = false;
     public void setPiecesBoxOriginalState(Set<ChessPiece> piecesBoxOriginalState) {
         this.piecesBoxOriginalState = piecesBoxOriginalState;
     }
@@ -69,6 +79,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
     public Graph getBoardGraph() {
         return boardGraph;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        isGameOver = gameOver;
     }
 
     public void setBoardGraph(Graph boardGraph) {
@@ -98,6 +112,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
         this.isSolved = isSolved;
         this.userPlayer = userPlayer;
+//        this.chessView.setOnCheckmateListener(this);
         initializeGraph();
     }
 
@@ -477,11 +492,26 @@ public class ChessLevel implements ChessDelegate, Serializable {
     public List<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
         List<ChessMove> possibleMoves = new ArrayList<>();
         Set<ChessPiece> playerPieces = getPiecesBox();
+        for (Square vertex : getBoardGraph().getVertices()) {
+            getBoardGraph().removeEdgesFromVertex(vertex);
+        }
+        for(ChessPiece piece: playerPieces) {
+            for (int c = 0; c < getColumns(); c++) {
+                for (int r = 0; r < getRows(); r++) {
+                    Square piecePosition = new Square(piece.getCol(), piece.getRow());
+                    if (canPieceMove(piecePosition, new Square(c, r))) {
+                        // Add an edge to the graph
+                        getBoardGraph().addEdge(piecePosition, new Square(c, r), true);
+                    }
+                }
+            }
+        }
 
         // Iterate through all pieces belonging to the specified player
         for (ChessPiece piece : playerPieces) {
             // Check if the piece belongs to the specified player
             if (piece.getPlayer() == playerColor) {
+
                 // Get the possible moves for the current piece
                 List<Square> possibleDestinations = getPossibleDestinations(piece);
 
@@ -489,6 +519,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 for (Square destination : possibleDestinations) {
                     if (canPieceMove(new Square(piece.getCol(), piece.getRow()), destination)) {
                         possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
+//                        getBoardGraph().addEdge(new Square(piece.getCol(), piece.getRow()), destination, true); // Adjust bidirectional as needed
                     }
                 }
             }
@@ -502,8 +533,9 @@ public class ChessLevel implements ChessDelegate, Serializable {
         List<Square> possibleDestinations = new ArrayList<>();
         Square currentSquare = new Square(piece.getCol(), piece.getRow());
 
+
         // Get adjacent squares from the graph
-        List<Square> adjacentSquares = boardGraph.getAdjacentVertices(currentSquare);
+        List<Square> adjacentSquares = getBoardGraph().getAdjacentVertices(currentSquare);
 
         // Iterate through adjacent squares
         for (Square square : adjacentSquares) {
@@ -519,10 +551,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
         ChessMove bestMove = null;
 
         // Get all possible moves for the opponent
-        List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.BLACK);
+        List<ChessMove> possibleBlackMoves = getAllPossibleMoves(ChessPlayer.BLACK);
 
         // Loop through each possible move and evaluate its score using Minimax
-        for (ChessMove move : possibleMoves) {
+        for (ChessMove move : possibleBlackMoves) {
             // Make the move
             Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
             Square toSquare = new Square(move.getToCol(), move.getToRow());
@@ -544,9 +576,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
 
     private int minimax(int depth, int alpha, int beta, boolean maximizingPlayer) {
-        if (depth == 0 || isGameOver()) {
+        if (depth == 0 || isGameOver) {
             // If depth is 0 or game is over, evaluate the board position
             return evaluateBoard();
+//            return evaluation.evaluation();
         }
 
         if (maximizingPlayer) {
@@ -583,6 +616,8 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 // Make the move
                 Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
                 Square toSquare = new Square(move.getToCol(), move.getToRow());
+
+                // Move piece
                 movePiece(fromSquare, toSquare);
 
                 // Recursively call minimax for the next level
@@ -592,7 +627,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
                 // Undo the move
                 undoLastMove();
-
                 // Perform alpha-beta pruning
                 if (beta <= alpha) {
                     break;
@@ -643,6 +677,12 @@ public class ChessLevel implements ChessDelegate, Serializable {
                     } else {
                         blackScore += QUEEN_VALUE;
                     }
+                case KING:
+                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+                        whiteScore += KING_VALUE;
+                    } else {
+                        blackScore += KING_VALUE;
+                    }
                     break;
                 // You may add the king value if necessary, but it's often not used in traditional evaluations
             }
@@ -658,5 +698,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
         // Return false otherwise
         return false; // Placeholder
     }
+
 }
 
