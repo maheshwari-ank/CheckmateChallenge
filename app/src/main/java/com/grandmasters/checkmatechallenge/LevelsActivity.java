@@ -107,7 +107,6 @@ public class LevelsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openMainActivityWithLevel(level);
-//                finish();
             }
         });
 
