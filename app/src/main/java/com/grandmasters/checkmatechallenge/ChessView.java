@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-public class ChessView extends View {
+public class ChessView extends View{
     private ChessDelegate chessDelegate;
     private Paint paint;
     private int rows;
@@ -42,8 +42,8 @@ public class ChessView extends View {
     private Graph boardGraph;
     private boolean bidirectional;
     private Square newSource;
-    private boolean playerTurn = true;
-    private boolean opponentTurn = false;
+    public boolean userTurn = true;
+    public boolean opponentTurn = false;
     private ChessLevel currentLevel;
     private final int maxDepth = 3;
 
@@ -404,7 +404,7 @@ public class ChessView extends View {
                             if(checkMate(newSource)){
                                 Log.d(TAG, "Checkmate!");
                                 checkmateListener.onCheckmate();
-                                playerTurn = false;
+                                userTurn = false;
                                 opponentTurn = false;
                             }
                             else {
@@ -415,11 +415,10 @@ public class ChessView extends View {
                             opponentTurn = true;
                         }
 
-
+//                        Log.d(TAG, String.valueOf(boardGraph.getAdjacentVertices(getKingPosition()).stream().count()));
                         if(opponentTurn) {
                             makeAIMove();
                         }
-
 
                         selectedCol = -1;
                         selectedRow = -1;
@@ -440,6 +439,7 @@ public class ChessView extends View {
     }
 
     private void makeAIMove() {
+
         // Call findBestMove method to get the best move for the AI player
         ChessMove bestMove = currentLevel.findBestMove(maxDepth, true); // You may need to define maxDepth
 
@@ -458,7 +458,7 @@ public class ChessView extends View {
         }
 
         // Update turn flags
-        playerTurn = true;
+        userTurn = true;
         opponentTurn = false;
 
         invalidate(); // Redraw the view after AI move
