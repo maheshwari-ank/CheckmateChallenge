@@ -14,6 +14,13 @@ import java.io.Serializable;
 
 public class ChessLevel implements ChessDelegate, Serializable {
 
+    // Piece values
+    private static final int PAWN_VALUE = 1;
+    private static final int KNIGHT_VALUE = 3;
+    private static final int BISHOP_VALUE = 3;
+    private static final int ROOK_VALUE = 5;
+    private static final int QUEEN_VALUE = 9;
+
     private static final int MAX_ROWS = 6;
     private static final int MAX_COLS = 5;
     private static final String TAG = "ChessLevel";
@@ -465,6 +472,191 @@ public class ChessLevel implements ChessDelegate, Serializable {
             copySet.add(new ChessPiece(piece));
         }
         return copySet;
+    }
+
+    public List<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
+        List<ChessMove> possibleMoves = new ArrayList<>();
+        Set<ChessPiece> playerPieces = getPiecesBox();
+
+        // Iterate through all pieces belonging to the specified player
+        for (ChessPiece piece : playerPieces) {
+            // Check if the piece belongs to the specified player
+            if (piece.getPlayer() == playerColor) {
+                // Get the possible moves for the current piece
+                List<Square> possibleDestinations = getPossibleDestinations(piece);
+
+                // Filter out illegal moves
+                for (Square destination : possibleDestinations) {
+                    if (canPieceMove(new Square(piece.getCol(), piece.getRow()), destination)) {
+                        possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
+                    }
+                }
+            }
+        }
+
+        return possibleMoves;
+    }
+
+
+    private List<Square> getPossibleDestinations(ChessPiece piece) {
+        List<Square> possibleDestinations = new ArrayList<>();
+        Square currentSquare = new Square(piece.getCol(), piece.getRow());
+
+        // Get adjacent squares from the graph
+        List<Square> adjacentSquares = boardGraph.getAdjacentVertices(currentSquare);
+
+        // Iterate through adjacent squares
+        for (Square square : adjacentSquares) {
+            possibleDestinations.add(square);
+        }
+
+        return possibleDestinations;
+    }
+
+
+    public ChessMove findBestMove(int depth, boolean maximizingPlayer) {
+        int bestScore = maximizingPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        ChessMove bestMove = null;
+
+        // Get all possible moves for the opponent
+        List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.BLACK);
+
+        // Loop through each possible move and evaluate its score using Minimax
+        for (ChessMove move : possibleMoves) {
+            // Make the move
+            Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
+            Square toSquare = new Square(move.getToCol(), move.getToRow());
+            movePiece(fromSquare, toSquare);
+            // Evaluate the move using Minimax with alpha-beta pruning
+            int score = minimax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, !maximizingPlayer);
+            // Undo the move
+            undoLastMove();
+            // Update the best move and score
+            if ((maximizingPlayer && score > bestScore) || (!maximizingPlayer && score < bestScore)) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+
+        // Return the best move found
+        return bestMove;
+    }
+
+
+    private int minimax(int depth, int alpha, int beta, boolean maximizingPlayer) {
+        if (depth == 0 || isGameOver()) {
+            // If depth is 0 or game is over, evaluate the board position
+            return evaluateBoard();
+        }
+
+        if (maximizingPlayer) {
+            int maxScore = Integer.MIN_VALUE;
+            // Get all possible moves for the opponent
+            List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.BLACK);
+
+            for (ChessMove move : possibleMoves) {
+                // Make the move
+                Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
+                Square toSquare = new Square(move.getToCol(), move.getToRow());
+                movePiece(fromSquare, toSquare);
+
+                // Recursively call minimax for the next level
+                int score = minimax(depth - 1, alpha, beta, false);
+                maxScore = Math.max(maxScore, score);
+                alpha = Math.max(alpha, score);
+
+                // Undo the move
+                undoLastMove();
+
+                // Perform alpha-beta pruning
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            return maxScore;
+        } else {
+            int minScore = Integer.MAX_VALUE;
+            // Get all possible moves for the player
+            List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.WHITE);
+
+            for (ChessMove move : possibleMoves) {
+                // Make the move
+                Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
+                Square toSquare = new Square(move.getToCol(), move.getToRow());
+                movePiece(fromSquare, toSquare);
+
+                // Recursively call minimax for the next level
+                int score = minimax(depth - 1, alpha, beta, true);
+                minScore = Math.min(minScore, score);
+                beta = Math.min(beta, score);
+
+                // Undo the move
+                undoLastMove();
+
+                // Perform alpha-beta pruning
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            return minScore;
+        }
+    }
+
+    private int evaluateBoard() {
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        // Iterate through all pieces on the board
+        for (ChessPiece piece : piecesBox) {
+            switch (piece.getPieceType()) {
+                case PAWN:
+                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+                        whiteScore += PAWN_VALUE;
+                    } else {
+                        blackScore += PAWN_VALUE;
+                    }
+                    break;
+                case KNIGHT:
+                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+                        whiteScore += KNIGHT_VALUE;
+                    } else {
+                        blackScore += KNIGHT_VALUE;
+                    }
+                    break;
+                case BISHOP:
+                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+                        whiteScore += BISHOP_VALUE;
+                    } else {
+                        blackScore += BISHOP_VALUE;
+                    }
+                    break;
+                case ROOK:
+                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+                        whiteScore += ROOK_VALUE;
+                    } else {
+                        blackScore += ROOK_VALUE;
+                    }
+                    break;
+                case QUEEN:
+                    if (piece.getPlayer() == ChessPlayer.WHITE) {
+                        whiteScore += QUEEN_VALUE;
+                    } else {
+                        blackScore += QUEEN_VALUE;
+                    }
+                    break;
+                // You may add the king value if necessary, but it's often not used in traditional evaluations
+            }
+        }
+
+        // Return the difference between white and black scores
+        return whiteScore - blackScore;
+    }
+
+    private boolean isGameOver() {
+        // Implement the logic to check if the game is over
+        // Return true if the game is over (e.g., checkmate, stalemate)
+        // Return false otherwise
+        return false; // Placeholder
     }
 }
 
