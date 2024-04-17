@@ -2,6 +2,7 @@ package com.grandmasters.checkmatechallenge;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.HashMap;
 
 class Graph implements Serializable {
 
