@@ -8,3 +8,10 @@ Checkmate Challenge is a variation of the traditional chess. The Checkmate Chall
 - Set up your environment variables
 - Install Android studio
 - Run the app in Android Studio
+
+## Features
+- Select difficulty level
+- Solve puzzles for checkmate
+- Interact with drag-and-drop pieces
+- Utilize hints and undo moves
+- Track progress and revisit puzzles
