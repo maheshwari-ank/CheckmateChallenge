@@ -1,9 +1,10 @@
 package com.grandmasters.checkmatechallenge;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 
-public class Stack<E> {
+public class Stack<E> implements Serializable {
     private static class Node<E> {
         E data;
         Node<E> next;
