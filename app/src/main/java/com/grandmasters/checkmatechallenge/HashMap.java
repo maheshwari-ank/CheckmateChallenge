@@ -1,13 +1,12 @@
 package com.grandmasters.checkmatechallenge;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+public class HashMap<K, V> implements Serializable, MapADT<K, V>{
 
-
-public class HashMap<K, V> implements Serializable {
-     public static class Entry<K, V> {
+    public static class Entry<K, V> implements Serializable{
         private final K key;
         private V value;
 
@@ -28,14 +27,16 @@ public class HashMap<K, V> implements Serializable {
             this.value = value;
         }
     }
-    private final int capacity;
-    private final List<Entry<K, V>>[] buckets;
 
+    private final int capacity;
+    private final CustomList<Entry<K, V>>[] buckets;
+
+    @SuppressWarnings("unchecked")
     public HashMap() {
         this.capacity = 10; // Default capacity
-        this.buckets = new List[capacity];
+        this.buckets = new CustomList[capacity];
         for (int i = 0; i < capacity; i++) {
-            buckets[i] = new ArrayList<>();
+            buckets[i] = new CustomList<>();
         }
     }
 
@@ -45,7 +46,7 @@ public class HashMap<K, V> implements Serializable {
 
     public void put(K key, V value) {
         int index = hash(key);
-        List<Entry<K, V>> bucket = buckets[index];
+        CustomList<Entry<K, V>> bucket = buckets[index];
         for (Entry<K, V> entry : bucket) {
             if (entry.getKey().equals(key)) {
                 entry.setValue(value);
@@ -57,7 +58,7 @@ public class HashMap<K, V> implements Serializable {
 
     public V get(K key) {
         int index = hash(key);
-        List<Entry<K, V>> bucket = buckets[index];
+        CustomList<Entry<K, V>> bucket = buckets[index];
         for (Entry<K, V> entry : bucket) {
             if (entry.getKey().equals(key)) {
                 return entry.getValue();
@@ -68,10 +69,11 @@ public class HashMap<K, V> implements Serializable {
 
     public void remove(K key) {
         int index = hash(key);
-        List<Entry<K, V>> bucket = buckets[index];
-        for (Entry<K, V> entry : bucket) {
+        CustomList<Entry<K, V>> bucket = buckets[index];
+        for (int i = 0; i < bucket.size(); i++) {
+            Entry<K, V> entry = bucket.get(i);
             if (entry.getKey().equals(key)) {
-                bucket.remove(entry);
+                bucket.remove(i);
                 return;
             }
         }
@@ -79,7 +81,7 @@ public class HashMap<K, V> implements Serializable {
 
     public boolean containsKey(K key) {
         int index = hash(key);
-        List<Entry<K, V>> bucket = buckets[index];
+        CustomList<Entry<K, V>> bucket = buckets[index];
         for (Entry<K, V> entry : bucket) {
             if (entry.getKey().equals(key)) {
                 return true;
@@ -89,7 +91,7 @@ public class HashMap<K, V> implements Serializable {
     }
 
     public boolean isEmpty() {
-        for (List<Entry<K, V>> bucket : buckets) {
+        for (CustomList<Entry<K, V>> bucket : buckets) {
             if (!bucket.isEmpty()) {
                 return false;
             }
@@ -99,15 +101,52 @@ public class HashMap<K, V> implements Serializable {
 
     public int size() {
         int size = 0;
-        for (List<Entry<K, V>> bucket : buckets) {
+        for (CustomList<Entry<K, V>> bucket : buckets) {
             size += bucket.size();
         }
         return size;
     }
 
     public void clear() {
-        for (List<Entry<K, V>> bucket : buckets) {
+        for (CustomList<Entry<K, V>> bucket : buckets) {
             bucket.clear();
         }
     }
+
+    public V getOrDefault(Object key, V defaultValue) {
+        // Implement getOrDefault
+        V value = get((K) key);
+        return (value != null) ? value : defaultValue;
+    }
+
+    public Set<K> keySet() {
+        // Implement keySet
+        Set<K> keys = new HashSet<>();
+        for (CustomList<Entry<K, V>> bucket : buckets) {
+            for (Entry<K, V> entry : bucket) {
+                keys.add(entry.getKey());
+            }
+        }
+        return keys;
+    }
+
+    public V[] values() {
+        CustomList<V> valuesList = new CustomList<>();
+
+        for (CustomList<Entry<K, V>> bucket : buckets) {
+            for (Entry<K, V> entry : bucket) {
+                valuesList.add(entry.getValue());
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        V[] valuesArray = (V[]) new Object[valuesList.size()];
+        int i = 0;
+        for (V value : valuesList) {
+            valuesArray[i++] = value;
+        }
+
+        return valuesArray;
+    }
 }
+

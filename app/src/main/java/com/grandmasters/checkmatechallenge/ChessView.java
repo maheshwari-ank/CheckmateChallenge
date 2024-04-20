@@ -11,13 +11,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
 import androidx.annotation.NonNull;
-
-import java.util.Collection;
-import java.util.HashMap;
-//import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
@@ -39,7 +33,7 @@ public class ChessView extends View{
     private float boardHeight;
     private static final String TAG = "ChessView";
     private final Set<Integer> imgResIds = new HashSet<>();
-    private final Map<Integer, Bitmap> bitmaps = new HashMap<>();
+    private final HashMap<Integer, Bitmap> bitmaps = new HashMap<>();
     private float availableWidth;
     private float availableHeight;
     private Graph boardGraph;
@@ -64,10 +58,7 @@ public class ChessView extends View{
         this.selectedRow = -1;
         this.isGameOver = false;
         dbHelper = DbHelperSingleton.getInstance(context);
-
-//        dataManager.setOnDataInitialization(this);
     }
-
 
     // Define an interface for checkmate callback
     public interface OnCheckmateListener {

@@ -6,8 +6,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
-import java.util.ArrayList;
-import java.util.List;
 import android.database.Cursor;
 import androidx.annotation.Nullable;
 
@@ -112,8 +110,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @SuppressLint("Range")
-    public List<ChessLevel> getAllLevels() {
-        List<ChessLevel> levelDataList = new ArrayList<>();
+    public CustomList<ChessLevel> getAllLevels() {
+        CustomList<ChessLevel> levelDataList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM Levels", null);
         if (cursor.moveToFirst()) {
@@ -132,8 +130,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @SuppressLint("Range")
-    public List<ChessPiece> getPiecesForLevel(int levelId) {
-        List<ChessPiece> pieceDataList = new ArrayList<>();
+    public CustomList<ChessPiece> getPiecesForLevel(int levelId) {
+        CustomList<ChessPiece> pieceDataList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         String[] selectionArgs = {String.valueOf(levelId)};
         // Assuming db is your SQLiteDatabase instance

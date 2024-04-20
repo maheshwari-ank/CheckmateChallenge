@@ -7,8 +7,6 @@ public interface ListADT<T> extends Iterable<T>{
     public T get(int index);
     public int size();
     public boolean isEmpty();
-//    public void ensureCapacity();
     public void clear();
-
     public Iterator<T> iterator();
 }

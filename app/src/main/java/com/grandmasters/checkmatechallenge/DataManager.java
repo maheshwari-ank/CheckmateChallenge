@@ -1,20 +1,12 @@
 package com.grandmasters.checkmatechallenge;
 
 import android.content.Context;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class DataManager {
     private static final String TAG = "DataManager";
-    private Map<Integer, ChessLevel> dataMap = new HashMap<>();
+    private HashMap<Integer, ChessLevel> dataMap = new HashMap<>();
     private ChessDelegate chessDelegate;
     private Set<ChessPiece> pieces = new HashSet<>();
     private DatabaseHelper dbHelper;
@@ -22,11 +14,11 @@ public class DataManager {
     private int unsolvedLevelId;
     private ChessLevel currentLevel;
 
-    public Map<Integer, ChessLevel> getDataMap() {
+    public HashMap<Integer, ChessLevel> getDataMap() {
         return dataMap;
     }
 
-    public void setDataMap(Map<Integer, ChessLevel> dataMap) {
+    public void setDataMap(HashMap<Integer, ChessLevel> dataMap) {
         this.dataMap = dataMap;
     }
 
@@ -110,14 +102,18 @@ public class DataManager {
     }
     private void loadLevelsFromDatabase() {
         // Load levels from the database
-        List<ChessLevel> levelDataList = dbHelper.getAllLevels();
-        for (ChessLevel levelData : levelDataList) {
+        CustomList<ChessLevel> levelDataList = dbHelper.getAllLevels();
+        int levelDataListSize = levelDataList.size();
+        for (int i = 0; i < levelDataListSize; i++) {
+            ChessLevel levelData = levelDataList.get(i);
             ChessLevel chessLevel = new ChessLevel(levelData.getLevelId(), levelData.getRows(), levelData.getColumns(), levelData.isSolved(), levelData.getUserPlayer());
             dataMap.put(levelData.getLevelId(), chessLevel);
 
             // Load pieces for each level
-            List<ChessPiece> pieceDataList = dbHelper.getPiecesForLevel(levelData.getLevelId());
-            for (ChessPiece pieceData : pieceDataList) {
+            CustomList<ChessPiece> pieceDataList = dbHelper.getPiecesForLevel(levelData.getLevelId());
+            int pieceDataListSize = pieceDataList.size();
+            for (int j = 0; j < pieceDataListSize; j++) {
+                ChessPiece pieceData = pieceDataList.get(j);
                 ChessPiece chessPiece = new ChessPiece(
                         pieceData.getLevelId(),
                         pieceData.getPieceId(),
@@ -131,6 +127,7 @@ public class DataManager {
             }
         }
     }
+
     private Set<ChessPiece> deepCopySet(Set<ChessPiece> originalSet) {
         Set<ChessPiece> copySet = new HashSet<>();
         for (ChessPiece piece : originalSet) {
@@ -139,7 +136,9 @@ public class DataManager {
         return copySet;
     }
     public void setOriginalStateForAllLevels() {
-        for (ChessLevel level : dataMap.values()) {
+        ChessLevel level = null;
+        for (int i = 1; i <= dataMap.size(); i++) {
+            level = dataMap.get(i);
             Set<ChessPiece> originalPieces = level.getPiecesBox();
             Set<ChessPiece> copiedPieces = deepCopySet(originalPieces);
             level.setPiecesBoxOriginalState(copiedPieces);
@@ -166,8 +165,18 @@ public class DataManager {
         return dataMap.get(levelId);
     }
 
-    public List<ChessLevel> getAllLevels() {
-        return new ArrayList<>(dataMap.values());
+//    public CustomList<ChessLevel> getAllLevels() {
+//        return new ArrayList<>(dataMap.values());
+//    }
+
+    public CustomList<ChessLevel> getAllLevels() {
+        ArrayList<ChessLevel> levelsList = new ArrayList<>(dataMap.size()); // Create an ArrayList with initial capacity
+        ChessLevel level = null;
+        for (int i = 1; i <= dataMap.size(); i++) {
+            level = dataMap.get(i);
+            levelsList.add(level); // Add each ChessLevel from dataMap.values() to levelsList
+        }
+        return levelsList; // Return the CustomList
     }
 
     public void updateCurrentLevel(ChessLevel currentLevel) {

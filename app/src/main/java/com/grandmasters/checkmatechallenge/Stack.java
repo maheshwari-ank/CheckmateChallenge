@@ -1,8 +1,6 @@
 package com.grandmasters.checkmatechallenge;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.EmptyStackException;
 
 public class Stack<E> implements StackADT<E>, Serializable {
     private static class Node<E> {
