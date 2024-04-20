@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 
-public class Stack<E> implements Serializable {
+public class Stack<E> implements StackADT<E>, Serializable {
     private static class Node<E> {
         E data;
         Node<E> next;
@@ -20,6 +20,7 @@ public class Stack<E> implements Serializable {
         this.top = null;
         this.size = 0;
     }
+
 
     public void push(E element) {
         Node<E> newNode = new Node<>(element);

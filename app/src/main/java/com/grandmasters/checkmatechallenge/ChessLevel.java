@@ -1,9 +1,9 @@
 package com.grandmasters.checkmatechallenge;
 
 import android.util.Log;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+//import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.io.Serializable;
@@ -402,8 +402,8 @@ public class ChessLevel implements ChessDelegate, Serializable {
         return copySet;
     }
 
-    public List<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
-        List<ChessMove> possibleMoves = new ArrayList<>();
+    public CustomList<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
+        CustomList<ChessMove> possibleMoves = new ArrayList<>();
         Set<ChessPiece> playerPieces = new HashSet<>(getPiecesBox());
         Square kingPosition = getKingPosition();
         boolean isInCheck = false;
@@ -421,7 +421,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 getBoardGraph().removeEdgesFromVertex(piecePosition);
                 addEdgesForPiece(piece);
                 // Get the possible moves for the current piece
-                List<Square> possibleDestinations = getPossibleDestinations(piece);
+                CustomList<Square> possibleDestinations = getPossibleDestinations(piece);
 
                 // Filter out illegal moves
                 for (Square destination : possibleDestinations) {
@@ -456,9 +456,9 @@ public class ChessLevel implements ChessDelegate, Serializable {
     }
 
     public Square getKingPosition(){
-        for(Square square : boardGraph.getVertices()) {
-            if (pieceAt(square) != null && pieceAt(square).getPieceType() == ChessPieceType.KING && pieceAt(square).getPlayer() == ChessPlayer.BLACK) {
-                return square;
+        for(Object square : boardGraph.getVertices()) {
+            if (pieceAt((Square) square) != null && pieceAt((Square) square).getPieceType() == ChessPieceType.KING && pieceAt((Square) square).getPlayer() == ChessPlayer.BLACK) {
+                return (Square) square;
             }
         }
         return null;
@@ -477,12 +477,12 @@ public class ChessLevel implements ChessDelegate, Serializable {
         }
     }
 
-    private List<Square> getPossibleDestinations(ChessPiece piece) {
-        List<Square> possibleDestinations = new ArrayList<>();
+    private CustomList<Square> getPossibleDestinations(ChessPiece piece) {
+        CustomList<Square> possibleDestinations = new ArrayList<>();
         Square currentSquare = new Square(piece.getCol(), piece.getRow());
 
         // Get adjacent squares from the graph
-        List<Square> adjacentSquares = getBoardGraph().getAdjacentVertices(currentSquare);
+        CustomList<Square> adjacentSquares = getBoardGraph().getAdjacentVertices(currentSquare);
 
         // Iterate through adjacent squares
         for (Square square : adjacentSquares) {
@@ -498,13 +498,13 @@ public class ChessLevel implements ChessDelegate, Serializable {
         ChessMove bestMove = null;
 
         // Get all possible moves for the opponent
-        List<ChessMove> possibleBlackMoves = getAllPossibleMoves(ChessPlayer.BLACK);
+        CustomList<ChessMove> possibleBlackMoves = getAllPossibleMoves(ChessPlayer.BLACK);
 
-        if(possibleBlackMoves.stream().count() == 0) {
+        if(possibleBlackMoves.isEmpty()) {
             return null;
         }
 
-        if(possibleBlackMoves.stream().count() == 1) {
+        if(possibleBlackMoves.size() == 1) {
             return possibleBlackMoves.get(0);
         }
 
@@ -547,7 +547,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
         if (maximizingPlayer) {
             int maxScore = Integer.MIN_VALUE;
             // Get all possible moves for the opponent
-            List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.BLACK);
+            CustomList<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.BLACK);
 
             for (ChessMove move : possibleMoves) {
 
@@ -573,7 +573,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
         } else {
             int minScore = Integer.MAX_VALUE;
             // Get all possible moves for the player
-            List<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.WHITE);
+            CustomList<ChessMove> possibleMoves = getAllPossibleMoves(ChessPlayer.WHITE);
 
             for (ChessMove move : possibleMoves) {
                 // Make the move
@@ -652,7 +652,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
         Square opponentKingPosition = getKingPosition();
 
         // Check if the given piece can move to the opponent's king position
-        List<Square> possibleMoves = getPossibleDestinations(piece);
+        CustomList<Square> possibleMoves = getPossibleDestinations(piece);
         for (Square destination : possibleMoves) {
             if (destination.equals(opponentKingPosition)) {
                 return true;

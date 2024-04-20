@@ -1,25 +1,25 @@
 package com.grandmasters.checkmatechallenge;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
+//import java.util.LinkedList;
+//import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-class Graph implements Serializable, GraphADT<Square> {
+class Graph<T> implements Serializable, GraphADT<T> {
 
-    private Map<Square, List<Square>> adjacencyMap;
+    private Map<T, CustomList<T>> adjacencyMap;
 
     public Graph() {
         this.adjacencyMap = new HashMap<>();
     }
 
-    public void addVertex(Square vertex) {
-        adjacencyMap.put(vertex, new LinkedList<>());
+    public void addVertex(T vertex) {
+        adjacencyMap.put(vertex, new CustomLinkedList<>());
     }
 
-    public void addEdge(Square source, Square destination, boolean bidirectional) {
+    public void addEdge(T source, T destination, boolean bidirectional) {
         if (!adjacencyMap.containsKey(source)) {
             addVertex(source);
         }
@@ -35,17 +35,17 @@ class Graph implements Serializable, GraphADT<Square> {
         }
     }
 
-    public void removeEdgesFromVertex(Square vertex) {
+    public void removeEdgesFromVertex(T vertex) {
         if (adjacencyMap.containsKey(vertex)) {
             adjacencyMap.get(vertex).clear();
         }
     }
 
-    public List<Square> getAdjacentVertices(Square vertex) {
-        return adjacencyMap.getOrDefault(vertex, new LinkedList<>());
+    public CustomList<T> getAdjacentVertices(T vertex) {
+        return  adjacencyMap.getOrDefault(vertex, new CustomLinkedList<>());
     }
 
-    public Set<Square> getVertices() {
+    public Set<T> getVertices() {
         return adjacencyMap.keySet();
     }
 
@@ -53,9 +53,9 @@ class Graph implements Serializable, GraphADT<Square> {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (Square vertex : adjacencyMap.keySet()) {
+        for (T vertex : adjacencyMap.keySet()) {
             builder.append(vertex.toString()).append(": ");
-            for (Square neighbor : adjacencyMap.get(vertex)) {
+            for (T neighbor : adjacencyMap.get(vertex)) {
                 builder.append(neighbor.toString()).append(" ");
             }
             builder.append("\n");

@@ -14,8 +14,9 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+//import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -230,9 +231,9 @@ public class ChessView extends View{
     }
 
     public Square getKingPosition(){
-        for(Square square : boardGraph.getVertices()) {
-            if (chessDelegate.pieceAt(square) != null && chessDelegate.pieceAt(square).getPieceType() == ChessPieceType.KING && chessDelegate.pieceAt(square).getPlayer() == ChessPlayer.BLACK) {
-                return square;
+        for(Object square : boardGraph.getVertices()) {
+            if (chessDelegate.pieceAt((Square) square) != null && chessDelegate.pieceAt((Square) square).getPieceType() == ChessPieceType.KING && chessDelegate.pieceAt((Square) square).getPlayer() == ChessPlayer.BLACK) {
+                return (Square) square;
             }
         }
         return null;
@@ -253,7 +254,7 @@ public class ChessView extends View{
     }
 
     public boolean kingInCheck(Square toSquare) {
-        for (Square vertex : boardGraph.getVertices()) {
+        for (Object vertex : boardGraph.getVertices()) {
             boardGraph.removeEdgesFromVertex(vertex);
         }
         // Add edges to the graph based on possible moves
@@ -266,7 +267,7 @@ public class ChessView extends View{
             }
         }
 
-        List<Square> list = boardGraph.getAdjacentVertices(new Square(toSquare.getCol(), toSquare.getRow()));
+        CustomList<Square> list = boardGraph.getAdjacentVertices(new Square(toSquare.getCol(), toSquare.getRow()));
         for(Square square: list) {
             if(chessDelegate.pieceAt(square) != null && chessDelegate.pieceAt(square).getPieceType().equals(ChessPieceType.KING)) {
                return true;
@@ -276,7 +277,7 @@ public class ChessView extends View{
     }
 
     public boolean checkMate(Square newSource) {
-        for (Square vertex : boardGraph.getVertices()) {
+        for (Object vertex : boardGraph.getVertices()) {
             boardGraph.removeEdgesFromVertex(vertex);
         }
         // Add edges to the graph based on possible moves
@@ -290,8 +291,8 @@ public class ChessView extends View{
             }
         }
         boolean kingCanMove = true;
-        List<Square> kingList = boardGraph.getAdjacentVertices(getKingPosition());
-        if (kingList.stream().count() == 0) {
+        CustomList<Square> kingList = boardGraph.getAdjacentVertices(getKingPosition());
+        if (kingList.isEmpty()) {
             kingCanMove = false;
         }
 
@@ -335,8 +336,8 @@ public class ChessView extends View{
 //            ChessPiece king = chessDelegate.pieceAt(getKingPosition());
             for (ChessPiece kingSidePiece : kingSidePieces) {
                 Square kingSidePieceSquare = new Square(kingSidePiece.getCol(), kingSidePiece.getRow());
-                List<Square> kingSidePieceList = boardGraph.getAdjacentVertices(kingSidePieceSquare);
-                if(kingSidePieceList.stream().count() == 0) {
+                CustomList<Square> kingSidePieceList = boardGraph.getAdjacentVertices(kingSidePieceSquare);
+                if(kingSidePieceList.isEmpty()) {
                     continue;
                 }
                 for (Square square : kingSidePieceList) {
@@ -476,7 +477,7 @@ public class ChessView extends View{
     }
 
     private void makeRandomMove() {
-        List<ChessMove> possibleBlackMoves = currentLevel.getAllPossibleMoves(ChessPlayer.BLACK);
+        CustomList<ChessMove> possibleBlackMoves =  currentLevel.getAllPossibleMoves(ChessPlayer.BLACK);
         if (!possibleBlackMoves.isEmpty()) {
             Random random = new Random();
             int randomIndex = random.nextInt(possibleBlackMoves.size());
@@ -559,7 +560,7 @@ public class ChessView extends View{
             }
 //            Log.d(TAG, String.valueOf(boardGraph.getAdjacentVertices(new Square(col, row))));
             // Highlight cells based on the graph
-            Set<Square> adjacentSquares = new HashSet<>(boardGraph.getAdjacentVertices(new Square(col, row)));
+            Set<Square> adjacentSquares = new HashSet<>((Collection) boardGraph.getAdjacentVertices(new Square(col, row)));
             for (Square square : adjacentSquares) {
                 drawHighlight(canvas, square, Color.argb(60, 250, 250, 0));
             }
@@ -586,7 +587,7 @@ public class ChessView extends View{
     // Method to clear existing highlights
     private void clearHighlights() {
         // Remove all edges from the graph
-        for (Square vertex : boardGraph.getVertices()) {
+        for (Object vertex : boardGraph.getVertices()) {
             boardGraph.removeEdgesFromVertex(vertex);
         }
     }
