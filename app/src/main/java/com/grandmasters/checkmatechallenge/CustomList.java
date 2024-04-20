@@ -2,6 +2,7 @@ package com.grandmasters.checkmatechallenge;
 
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -26,6 +27,14 @@ public class CustomList<T> implements Iterable<T>, ListADT<T>, Serializable {
             throw new IndexOutOfBoundsException("Index out of bounds");
         }
         return (T) elements[index];
+    }
+
+    public void remove(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index out of bounds");
+        }
+        System.arraycopy(elements, index + 1, elements, index, size - index - 1);
+        elements[--size] = null; // Avoid memory leak
     }
 
     public int size() {
@@ -79,5 +88,22 @@ public class CustomList<T> implements Iterable<T>, ListADT<T>, Serializable {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    public T[] toArray(T[] array) {
+        // Ensure the provided array is large enough
+        if (array.length < size) {
+            array = Arrays.copyOf(array, size);
+        }
+
+        // Copy elements into the array
+        System.arraycopy(elements, 0, array, 0, size);
+
+        // If the array is larger than the list, set the element after the last one to null
+        if (array.length > size) {
+            array[size] = null;
+        }
+
+        return array;
     }
 }

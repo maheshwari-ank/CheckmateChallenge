@@ -1,15 +1,11 @@
 package com.grandmasters.checkmatechallenge;
 
 import java.io.Serializable;
-//import java.util.LinkedList;
-//import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 class Graph<T> implements Serializable, GraphADT<T> {
 
-    private Map<T, CustomList<T>> adjacencyMap;
+    private HashMap<T, CustomList<T>> adjacencyMap;
 
     public Graph() {
         this.adjacencyMap = new HashMap<>();
@@ -40,7 +36,6 @@ class Graph<T> implements Serializable, GraphADT<T> {
             adjacencyMap.get(vertex).clear();
         }
     }
-
     public CustomList<T> getAdjacentVertices(T vertex) {
         return  adjacencyMap.getOrDefault(vertex, new CustomLinkedList<>());
     }

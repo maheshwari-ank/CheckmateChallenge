@@ -1,7 +1,7 @@
 package com.grandmasters.checkmatechallenge;
 
 import java.util.Set;
-//import java.util.List;
+
 public interface GraphADT<T>  {
 
         // Adds a vertex to the graph

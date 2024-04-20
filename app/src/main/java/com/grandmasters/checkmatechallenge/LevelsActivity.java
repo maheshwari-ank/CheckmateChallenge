@@ -3,21 +3,13 @@ package com.grandmasters.checkmatechallenge;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.style.IconMarginSpan;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 
 public class LevelsActivity extends AppCompatActivity {
@@ -34,11 +26,13 @@ public class LevelsActivity extends AppCompatActivity {
         levelsGrid = findViewById(R.id.levels_grid);
 
         // Fetch levels from the database, assuming you have a method to do so
-        List<ChessLevel> levels = dataManager.getAllLevels();
+        CustomList<ChessLevel> levels = dataManager.getAllLevels();
 
         // Iterate over the levels and create a CardView for each
         int columnCount = 0;
-        for (ChessLevel level : levels) {
+
+        for (int i = 0; i < levels.size(); i++) {
+            ChessLevel level = levels.get(i);
             if (columnCount == 3) {
                 columnCount = 0;
             }
@@ -50,12 +44,11 @@ public class LevelsActivity extends AppCompatActivity {
             levelsGrid.addView(cardView);
             columnCount++;
         }
-    }
 
+    }
 
     private CardView createCardView(ChessLevel level) {
         CardView cardView = new CardView(this);
-//        int cardWidth = getResources().getDisplayMetrics().widthPixels / 3;
         GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
         layoutParams.width = 120; // Set to 0 to distribute equally in GridLayout
         layoutParams.height = 300;
