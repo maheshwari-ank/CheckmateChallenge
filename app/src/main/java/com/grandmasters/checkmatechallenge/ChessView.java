@@ -560,7 +560,11 @@ public class ChessView extends View{
             }
 //            Log.d(TAG, String.valueOf(boardGraph.getAdjacentVertices(new Square(col, row))));
             // Highlight cells based on the graph
-            Set<Square> adjacentSquares = new HashSet<>((Collection) boardGraph.getAdjacentVertices(new Square(col, row)));
+            CustomList<Square> adjacentList = boardGraph.getAdjacentVertices(new Square(col, row));
+            Set<Square> adjacentSquares = new HashSet<>(adjacentList.size());
+            for (Square square : adjacentList) {
+                adjacentSquares.add(square);
+            }
             for (Square square : adjacentSquares) {
                 drawHighlight(canvas, square, Color.argb(60, 250, 250, 0));
             }

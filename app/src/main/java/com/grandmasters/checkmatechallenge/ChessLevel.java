@@ -424,7 +424,9 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 CustomList<Square> possibleDestinations = getPossibleDestinations(piece);
 
                 // Filter out illegal moves
-                for (Square destination : possibleDestinations) {
+                Square destination = null;
+                for (int i=0;i<possibleDestinations.size();i++) {
+                    destination = possibleDestinations.get(i);
                     if (!isInCheck || canBlockOrCaptureToAvoidCheck(piecePosition, destination)) {
                         if (canPieceMove(piecePosition, destination)) {
                             possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
@@ -509,8 +511,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
         }
 
         // Loop through each possible move and evaluate its score using Minimax
-        for (ChessMove move : possibleBlackMoves) {
+        ChessMove move = null;
+        for (int i =0;i<possibleBlackMoves.size();i++) {
             // Make the move
+            move = possibleBlackMoves.get(i);
             Square fromSquare = new Square(move.getFromCol(), move.getFromRow());
             Square toSquare = new Square(move.getToCol(), move.getToRow());
             movePiece(fromSquare, toSquare);
