@@ -1,63 +1,22 @@
 package com.grandmasters.checkmatechallenge;
 
 import android.util.Log;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
-//import java.util.Stack;
 import java.io.Serializable;
 
 public class ChessLevel implements ChessDelegate, Serializable {
-
     // Piece values
     private static final int PAWN_VALUE = 100;
     private static final int KNIGHT_VALUE = 300;
     private static final int BISHOP_VALUE = 300;
     private static final int ROOK_VALUE = 500;
     private static final int QUEEN_VALUE = 900;
-
-//    private static final int PAWN_VALUE = 100;
-//    private static final int KNIGHT_VALUE = 320;
-//    private static final int BISHOP_VALUE = 325;
-//    private static final int ROOK_VALUE = 500;
-//    private static final int QUEEN_VALUE = 975;
-//    private static final int KING_VALUE = 32767;
-
     private static final int MAX_ROWS = 6;
     private static final int MAX_COLS = 5;
-    private static final String TAG = "ChessLevel";
-//    private Evaluation evaluation = new Evaluation();
-
-    public int getLevelId() {
-        return levelId;
-    }
-
-    public void setLevelId(int levelId) {
-        this.levelId = levelId;
-    }
-
-    public void setRows(int rows) {
-        this.rows = rows;
-    }
-
-    public void setColumns(int columns) {
-        this.columns = columns;
-    }
-
-    public boolean isSolved() {
-        return isSolved;
-    }
-
-    public void setSolved(boolean solved) {
-        isSolved = solved;
-    }
-
-    //    private String levelId;
     private ChessView chessView;
     private int levelId;
     private int rows;
@@ -67,13 +26,34 @@ public class ChessLevel implements ChessDelegate, Serializable {
     private Set<ChessPiece> piecesBox;
     private Set<ChessPiece> piecesBoxOriginalState;
     private Graph boardGraph;
+    private boolean isGameOver = false;
+    private static final String TAG = "ChessLevel";
+    public int getLevelId() {
+        return levelId;
+    }
+    public void setLevelId(int levelId) {
+        this.levelId = levelId;
+    }
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+    public void setColumns(int columns) {
+        this.columns = columns;
+    }
+    public boolean isSolved() {
+        return isSolved;
+    }
+    public void setSolved(boolean solved) {
+        isSolved = solved;
+    }
     public Set<ChessPiece> getPiecesBoxOriginalState() {
         return piecesBoxOriginalState;
     }
-    private boolean isGameOver = false;
+
     public void setPiecesBoxOriginalState(Set<ChessPiece> piecesBoxOriginalState) {
         this.piecesBoxOriginalState = piecesBoxOriginalState;
     }
+
     Stack<ChessMove> moves = new Stack<>();
 
     public Graph getBoardGraph() {
@@ -111,7 +91,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
         this.piecesBoxOriginalState = deepCopySet(piecesBox);
         this.isSolved = isSolved;
         this.userPlayer = userPlayer;
-//        this.chessView.setOnCheckmateListener(this);
         initializeGraph();
     }
 
@@ -123,24 +102,17 @@ public class ChessLevel implements ChessDelegate, Serializable {
             }
         }
     }
-    public void resetLevel() {
 
+    public void resetLevel() {
         piecesBox.clear();
         moves.removeAllElements();
-//        piecesBox.addAll(deepCopySet(piecesBoxOriginalState));
         for (ChessPiece originalPiece : piecesBoxOriginalState) {
             piecesBox.add(new ChessPiece(originalPiece));
         }
-//        initializeGraph();
-//        for (Square vertex : boardGraph.getVertices()) {
-//            boardGraph.removeEdgesFromVertex(vertex);
-//        }
-
     }
 
     public void addPiece(ChessPiece piece) {
         piecesBox.add(piece);
-//        piecesBoxOriginalState.add(piece);
     }
 
     private boolean isValidPosition(Square square) {
@@ -317,34 +289,12 @@ public class ChessLevel implements ChessDelegate, Serializable {
         return canRookMove(fromSquare, toSquare) || canBishopMove(fromSquare, toSquare);
     }
 
-//    public boolean canKingMove(Square kingSquare) {
-//        for (ChessPiece piece : piecesBox) {
-//            if (!piece.getPlayer().equals(ChessPlayer.WHITE)) {
-//                Square pieceSquare = new Square(piece.getCol(), piece.getRow());
-//                List<Square> adjacentSquares = boardGraph.getAdjacentVertices(pieceSquare);
-//
-//                for (Square adjacentSquare : adjacentSquares) {
-//                    ChessPiece adjacentPiece = pieceAt(adjacentSquare);
-//                    if (adjacentPiece != null && adjacentPiece.getPlayer().equals(ChessPlayer.WHITE)) {
-//                        // The king is in check
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//        // King is not in check
-//        return false;
-//    }
-
     public boolean isCheckMate(Square fromSquare){
         return false;
     }
 
     public boolean canKingMove(Square fromSquare, Square toSquare) {
         // Check if the move is within one square horizontally or vertically
-//        if(isCheckMate(fromSquare)){
-//            return false;
-//        }
         if((Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 && Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1)
                 || (Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 && Math.abs(fromSquare.getCol() - toSquare.getCol()) == 0)
                 || (Math.abs(fromSquare.getRow() - toSquare.getRow()) == 0 && Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1)) {
@@ -367,40 +317,14 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 // Restore the destination piece if it was captured
                 piecesBox.add(destinationPiece);
             }
-
             // Return true if the king is not in check after the move
             return !kingInCheck;
         }
         return false;
     }
 
-//    public boolean canKingMove(Square fromSquare, Square toSquare){
-//        if((Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 && Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1)
-//                || (Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 && Math.abs(fromSquare.getCol() - toSquare.getCol()) == 0)
-//        || (Math.abs(fromSquare.getRow() - toSquare.getRow()) == 0 && Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1)){
-//
-//            return true;
-//        }
-//        return false;
-//    }
-
     public boolean isKingInCheck(ChessPiece king) {
-        // Find the king's position
-//        Square kingPosition = null;
-//        for (int col = 0; col < columns; col++) {
-//            for (int row = 0; row < rows; row++) {
-//                ChessPiece piece = pieceAt(new Square(col, row));
-//                if (piece != null && piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == king.getPlayer()) {
-//                    kingPosition = new Square(col, row);
-//                    break;
-//                }
-//            }
-//            if (kingPosition != null) break;
-//        }
-//
-//        if (kingPosition == null) return false; // King not found, should not happen in a valid chess game
         Set <ChessPiece> pieces = getPiecesBox();
-
         for (ChessPiece piece: pieces) {
             Square fromSquare = new Square(piece.getCol(), piece.getRow());
             Square toSquare = new Square(king.getCol(), king.getRow());
@@ -408,20 +332,9 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 return true;
             }
         }
-        // Iterate through opponent's pieces and check if any of them can attack the king
-//        for (int col = 0; col < columns; col++) {
-//            for (int row = 0; row < rows; row++) {
-//                ChessPiece piece = pieceAt(new Square(col, row));
-//                if (piece != null && piece.getPlayer() != king.getPlayer()) {
-//                    if (canPieceMove(new Square(col, row), new Square(king.getCol(), king.getRow()))) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-
         return false;
     }
+
     public boolean canKnightMove(Square fromSquare, Square toSquare) {
         return Math.abs(fromSquare.getCol() - toSquare.getCol()) == 2 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 1 ||
                 Math.abs(fromSquare.getCol() - toSquare.getCol()) == 1 && Math.abs(fromSquare.getRow() - toSquare.getRow()) == 2;
@@ -495,14 +408,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
         Square kingPosition = getKingPosition();
         boolean isInCheck = false;
 
-        // Find the king's position
-//        for (ChessPiece piece : playerPieces) {
-//            if (piece.getPieceType() == ChessPieceType.KING && piece.getPlayer() == playerColor) {
-//                kingPosition = new Square(piece.getCol(), piece.getRow());
-//                break;
-//            }
-//        }
-
         // Check if the king is in check
         if (kingPosition != null) {
             isInCheck = isKingInCheck(pieceAt(kingPosition));
@@ -540,52 +445,15 @@ public class ChessLevel implements ChessDelegate, Serializable {
         // Simulate the move
         movePiece(fromSquare, toSquare);
 
-//        if (destinationPiece != null) {
-//            // Restore the destination piece if it was captured
-//            getPiecesBox().remove(destinationPiece);
-//        }
         // Check if the king is still in check after the move
         boolean kingInCheck = isKingInCheck(pieceAt(getKingPosition()));
 
         // Undo the move
         undoLastMove();
 
-//        if (destinationPiece != null) {
-//            // Restore the destination piece if it was captured
-//            getPiecesBox().add(destinationPiece);
-//        }
-
         // If the king is no longer in check after the move, it's valid to block or capture
         return !kingInCheck;
     }
-
-
-//    public List<ChessMove> getAllPossibleMoves(ChessPlayer playerColor) {
-//        List<ChessMove> possibleMoves = new ArrayList<>();
-////        Set<ChessPiece> playerPieces = getPiecesBox();
-//        Set<ChessPiece> playerPieces = new HashSet<>(getPiecesBox());
-//
-//        // Iterate through all pieces belonging to the specified player
-//       for (ChessPiece piece : playerPieces) {
-//            // Check if the piece belongs to the specified player
-//            if (piece.getPlayer() == playerColor) {
-//                Square piecePosition = new Square(piece.getCol(), piece.getRow());
-//                getBoardGraph().removeEdgesFromVertex(piecePosition);
-//                addEdgesForPiece(piece);
-//                // Get the possible moves for the current piece
-//                List<Square> possibleDestinations = getPossibleDestinations(piece);
-//
-//                // Filter out illegal moves
-//                for (Square destination : possibleDestinations) {
-//                    if (canPieceMove(new Square(piece.getCol(), piece.getRow()), destination)) {
-//                        possibleMoves.add(new ChessMove(piece.getCol(), piece.getRow(), destination.getCol(), destination.getRow(), pieceAt(destination)));
-//                    }
-//                }
-//            }
-//        }
-//
-//        return possibleMoves;
-//    }
 
     public Square getKingPosition(){
         for(Square square : boardGraph.getVertices()) {
@@ -600,7 +468,8 @@ public class ChessLevel implements ChessDelegate, Serializable {
         for (int c = 0; c < getColumns(); c++) {
             for (int r = 0; r < getRows(); r++) {
                 Square piecePosition = new Square(piece.getCol(), piece.getRow());
-                if (canPieceMove(piecePosition, new Square(c, r))) {
+                Square destinationSquare = new Square(c, r);
+                if (canPieceMove(piecePosition, destinationSquare)) {
                     // Add an edge to the graph
                     getBoardGraph().addEdge(piecePosition, new Square(c, r), true);
                 }
@@ -611,7 +480,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
     private List<Square> getPossibleDestinations(ChessPiece piece) {
         List<Square> possibleDestinations = new ArrayList<>();
         Square currentSquare = new Square(piece.getCol(), piece.getRow());
-
 
         // Get adjacent squares from the graph
         List<Square> adjacentSquares = getBoardGraph().getAdjacentVertices(currentSquare);
@@ -631,6 +499,10 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
         // Get all possible moves for the opponent
         List<ChessMove> possibleBlackMoves = getAllPossibleMoves(ChessPlayer.BLACK);
+
+        if(possibleBlackMoves.stream().count() == 0) {
+            return null;
+        }
 
         if(possibleBlackMoves.stream().count() == 1) {
             return possibleBlackMoves.get(0);
@@ -654,19 +526,22 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 bestScore = score;
                 bestMove = move;
             }
+
+            if(bestMove == null) {
+                Random random = new Random();
+                int randomIndex = random.nextInt(possibleBlackMoves.size());
+                ChessMove randomMove = possibleBlackMoves.get(randomIndex);
+                bestMove = randomMove;
+            }
         }
-
-
         // Return the best move found
         return bestMove;
     }
-
-
+    
     private int minimax(int depth, int alpha, int beta, boolean maximizingPlayer) {
         if (depth == 0) {
             // If depth is 0 or game is over, evaluate the board position
             return evaluateBoard();
-//            return evaluation.evaluation();
         }
 
         if (maximizingPlayer) {
@@ -707,7 +582,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
                 // Move piece
                 movePiece(fromSquare, toSquare);
-
 
                 // Recursively call minimax for the next level
                 int score = minimax(depth - 1, alpha, beta, true);
@@ -766,14 +640,6 @@ public class ChessLevel implements ChessDelegate, Serializable {
                     } else {
                         blackScore += QUEEN_VALUE;
                     }
-//                case KING:
-//                    if (piece.getPlayer() == ChessPlayer.WHITE) {
-//                        whiteScore += KING_VALUE;
-//                    } else {
-//                        blackScore += KING_VALUE;
-//                    }
-//                    break;
-                // You may add the king value if necessary, but it's often not used in traditional evaluations
             }
         }
 
@@ -792,17 +658,7 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 return true;
             }
         }
-
         return false;
     }
-
-
-    private boolean isGameOver() {
-        // Implement the logic to check if the game is over
-        // Return true if the game is over (e.g., checkmate, stalemate)
-        // Return false otherwise
-        return false; // Placeholder
-    }
-
 }
 

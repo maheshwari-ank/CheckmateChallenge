@@ -192,13 +192,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import android.content.Context;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements ChessView.OnCheckmateListener {
+public class MainActivity extends AppCompatActivity implements ChessView.OnCheckmateListener, ChessView.OnStalemateListener, ChessView.OnMoveListener{
     private ChessView chessView;
     private TextView levelName;
     private TextView mate;
@@ -223,6 +222,8 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         Intent intent = getIntent();
         chessView = findViewById(R.id.chess_view);
         chessView.setOnCheckmateListener(this);
+        chessView.setOnStalemateListener(this);
+        chessView.setOnMoveListener(this);
         levelName = findViewById(R.id.level_name);
         mate = findViewById(R.id.mate);
 //        dataManager = new DataManager(getApplicationContext());
@@ -241,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
                 levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
                 levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                 mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+                mate.setText("Mate in "+ String.valueOf(dbHelper.getMateInForLevel(currentlevel.getLevelId())));
             }
         }
         else {
@@ -250,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
             levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
 //            mate.setText("Level " + String.valueOf(currentlevel.getLevelId()));
             mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+            mate.setText("Mate in "+ String.valueOf(dbHelper.getMateInForLevel(currentlevel.getLevelId())));
 //            currentlevel.resetLevel();
             chessView.setChessDelegate(currentlevel);
             chessView.setCurrentLevel(currentlevel);
@@ -259,6 +262,8 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
             public void onClick(View v) {
                 currentlevel.resetLevel();
                 chessView.setChessDelegate(currentlevel);
+                mate.setText("Mate in "+ String.valueOf(dbHelper.getMateInForLevel(currentlevel.getLevelId())));
+                chessView.resetMovesLeft(dbHelper.getMateInForLevel(currentlevel.getLevelId()));
                 chessView.invalidate();
             }
         });
@@ -295,7 +300,8 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
         mate.setText("Checkmate!");
         dataManager.getChessLevel(currentlevel.getLevelId()).setSolved(true);
-        findViewById(R.id.hintButton).setVisibility(View.GONE);
+        dbHelper.updateLevelSolvedStatus(currentlevel.getLevelId(), true);
+//        findViewById(R.id.hintButton).setVisibility(View.GONE);
         findViewById(R.id.resetButton).setVisibility(View.GONE);
         findViewById(R.id.undoButton).setVisibility(View.GONE);
 
@@ -341,5 +347,26 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         dataManager.updateCurrentLevel(nextLevel);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    public void onStalemate() {
+        TextView mate = findViewById(R.id.mate);
+        mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+        mate.setText("Stalemate!");
+    }
+
+    @Override
+    public void onMove(int movesLeft) {
+        if(movesLeft == 0) {
+            TextView mate = findViewById(R.id.mate);
+            mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+            mate.setText("0 moves left");
+        }
+        else {
+            TextView mate = findViewById(R.id.mate);
+            mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+            mate.setText("Mate in "+ String.valueOf(movesLeft));
+        }
     }
 }

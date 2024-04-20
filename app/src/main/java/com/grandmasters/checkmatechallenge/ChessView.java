@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
+
 public class ChessView extends View{
     private ChessDelegate chessDelegate;
     private Paint paint;
@@ -47,6 +48,11 @@ public class ChessView extends View{
     public boolean opponentTurn = false;
     private ChessLevel currentLevel;
     private final int maxDepth = 4;
+    private boolean staleMate;
+    private DatabaseHelper dbHelper;
+    private DataManager dataManager;
+    private int movesLeft;
+    private boolean isGameOver;
 
     public ChessView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,20 +61,39 @@ public class ChessView extends View{
         paint = new Paint();
         this.selectedCol = -1;
         this.selectedRow = -1;
+        this.isGameOver = false;
+        dbHelper = DbHelperSingleton.getInstance(context);
 
+//        dataManager.setOnDataInitialization(this);
     }
+
 
     // Define an interface for checkmate callback
     public interface OnCheckmateListener {
         void onCheckmate();
     }
 
+    public interface OnStalemateListener {
+        void onStalemate();
+    }
+
+    public interface OnMoveListener {
+        void onMove(int movesLeft);
+    }
+
     // Declare a member variable to hold the listener
     private OnCheckmateListener checkmateListener;
-
+    private OnStalemateListener stalemateListener;
+    private OnMoveListener moveListener;
     // Setter method for the listener
     public void setOnCheckmateListener(OnCheckmateListener listener) {
         this.checkmateListener = listener;
+    }
+    public void setOnStalemateListener(OnStalemateListener listener) {
+        this.stalemateListener = listener;
+    }
+    public void setOnMoveListener(OnMoveListener listener) {
+        this.moveListener = listener;
     }
     // Method Get Chess Pieces Resource Ids and save them in a Hash set
     private void getImgResIds() {
@@ -127,10 +152,9 @@ public class ChessView extends View{
             if (selectedCol != -1 && selectedRow != -1) {
                 highlightPossibleMoves(canvas, selectedCol, selectedRow);
             }
-//            if (newSource != null && kingInCheck(newSource)) {
-//                drawHighlight(canvas,getKingPosition());
-//            }
-
+            if (isGameOver == true) {
+                drawHighlight(canvas, getKingPosition(), Color.argb(60, 250, 0, 0));
+            }
         }
     }
 
@@ -400,11 +424,19 @@ public class ChessView extends View{
                         Square toSquare = new Square(destinationCol, destinationRow);
                         newSource = toSquare;
                         chessDelegate.movePiece(fromSquare, toSquare);
+                        if(movesLeft != 0) {
+                            movesLeft --;
+                            moveListener.onMove(movesLeft);
+                        }
+                        else {
+                            moveListener.onMove(movesLeft);
+                        }
                         if(kingInCheck(newSource)) {
                             Log.d(TAG, "King in Check!");
                             if(checkMate(newSource)){
                                 Log.d(TAG, "Checkmate!");
                                 checkmateListener.onCheckmate();
+                                isGameOver = true;
                                 userTurn = false;
                                 opponentTurn = false;
                             }
@@ -421,7 +453,10 @@ public class ChessView extends View{
 //                            makeRandomMove();
                             makeAIMove();
                         }
-
+                        if(staleMate == true) {
+                            stalemateListener.onStalemate();
+                            staleMate = false;
+                        }
                         selectedCol = -1;
                         selectedRow = -1;
                         invalidate(); // Redraw the view after moving
@@ -472,30 +507,32 @@ public class ChessView extends View{
     }
 
     private void makeAIMove() {
-
-
         // Call findBestMove method to get the best move for the AI player
         ChessMove bestMove = currentLevel.findBestMove(maxDepth, true); // You may need to define maxDepth
 
-        // Apply the best move on the chessboard
-        Square fromSquare = new Square(bestMove.getFromCol(), bestMove.getFromRow());
-        Square toSquare = new Square(bestMove.getToCol(), bestMove.getToRow());
-        chessDelegate.movePiece(fromSquare, toSquare);
+        if(bestMove != null) {
+            // Apply the best move on the chessboard
+            Square fromSquare = new Square(bestMove.getFromCol(), bestMove.getFromRow());
+            Square toSquare = new Square(bestMove.getToCol(), bestMove.getToRow());
+            chessDelegate.movePiece(fromSquare, toSquare);
 
-        // Check for checkmate
-        if (kingInCheck(toSquare)) {
-            Log.d(TAG, "King in Check!");
-            if (checkMate(toSquare)) {
-                Log.d(TAG, "Checkmate!");
-                checkmateListener.onCheckmate();
+            // Check for checkmate
+            if (kingInCheck(toSquare)) {
+                Log.d(TAG, "King in Check!");
+                if (checkMate(toSquare)) {
+                    Log.d(TAG, "Checkmate!");
+                    checkmateListener.onCheckmate();
+                }
             }
+
+            // Update turn flags
+            userTurn = true;
+            opponentTurn = false;
+            invalidate(); // Redraw the view after AI move
         }
-
-        // Update turn flags
-        userTurn = true;
-        opponentTurn = false;
-
-        invalidate(); // Redraw the view after AI move
+        else {
+            staleMate = true;
+        }
     }
 
 
@@ -524,12 +561,12 @@ public class ChessView extends View{
             // Highlight cells based on the graph
             Set<Square> adjacentSquares = new HashSet<>(boardGraph.getAdjacentVertices(new Square(col, row)));
             for (Square square : adjacentSquares) {
-                drawHighlight(canvas, square);
+                drawHighlight(canvas, square, Color.argb(60, 250, 250, 0));
             }
         }
     }
 
-    private void drawHighlight(Canvas canvas, Square square) {
+    private void drawHighlight(Canvas canvas, Square square, int highlightColor) {
         int row = square.getRow();
         int col = square.getCol();
 
@@ -541,7 +578,7 @@ public class ChessView extends View{
 
         // Draw highlight
         Paint highlightPaint = new Paint();
-        highlightPaint.setColor(Color.argb(60, 250, 250, 0));
+        highlightPaint.setColor(highlightColor);
         canvas.drawRect(left, top, right, bottom, highlightPaint);
     }
 
@@ -556,6 +593,12 @@ public class ChessView extends View{
 
     public void setCurrentLevel(ChessLevel level) {
         this.currentLevel = level;
+        this.movesLeft = dbHelper.getMateInForLevel(currentLevel.getLevelId());
     }
+
+    public void resetMovesLeft(int moves) {
+        movesLeft = moves;
+    }
+
 }
 

@@ -36,21 +36,6 @@
 
 
         <Button
-            android:id="@+id/hintButton"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/roundstyle"
-            android:drawableTop="@drawable/bulb_outline"
-            android:gravity="center_horizontal|center_vertical"
-            android:outlineProvider="background"
-            android:paddingTop="10dp"
-            android:text="Hint"
-            android:textAlignment="center"
-            android:textAllCaps="false"
-            android:textColor="#000000"/>
-
-        <Button
             android:id="@+id/resetButton"
             android:layout_width="70dp"
             android:layout_height="70dp"
@@ -123,7 +108,7 @@
         android:layout_marginEnd="133dp"
         android:layout_marginBottom="-69dp"
         android:gravity="center_horizontal"
-        android:text="Mate in 2" />
+        android:text="Mate in 1" />
 
 </RelativeLayout>
 
