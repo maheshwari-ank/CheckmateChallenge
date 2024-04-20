@@ -3,17 +3,12 @@ package com.grandmasters.checkmatechallenge;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import android.database.Cursor;
-
-
 import androidx.annotation.Nullable;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -26,16 +21,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
-//        try {
-//            database = this.getWritableDatabase();
-//            // Or use getWritableDatabase() if you need write access
-//            // ...
-//        } catch (SQLiteException e) {
-//            Log.e(TAG, "Error opening database: " + e.getMessage());
-//            // Handle the error, e.g., display an error message to the user
-//        }
-//        database = this.getWritableDatabase();
-//        Log.d(TAG, "SQLite Setup done");
     }
 
     @Override
@@ -47,7 +32,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "rows INTEGER," +
                 "cols INTEGER," +
                 "is_solved Boolean," +
-                "user_player)");
+                "user_player TEXT," +
+                "mate_in INTEGER)");
 
         // Create the ChessPieces table
         db.execSQL("CREATE TABLE ChessPieces (" +
@@ -75,7 +61,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return levelId;
     }
 
-    public long insertLevel(int levelId, int rows, int cols, boolean isSolved, ChessPlayer userPlayer) {
+    @SuppressLint("Range")
+    public int getMateInForLevel(int levelId) {
+        int mateIn = -1; // Default value if level is not found or is solved
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT mate_in FROM Levels WHERE level_id = " + String.valueOf(levelId) + " ";
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            mateIn = cursor.getInt(cursor.getColumnIndex("mate_in"));
+        }
+        cursor.close();
+        return mateIn;
+    }
+
+    public void updateLevelSolvedStatus(int levelId, boolean isSolved) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("is_solved", isSolved ? 1 : 0);
+        String whereClause = "level_id = ?";
+        String[] whereArgs = {String.valueOf(levelId)};
+        int rowsAffected = db.update("Levels", values, whereClause, whereArgs);
+        db.close();
+    }
+
+    public long insertLevel(int levelId, int rows, int cols, boolean isSolved, ChessPlayer userPlayer, int mateIn) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("level_id", levelId);
@@ -83,6 +92,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("cols", cols);
         values.put("is_solved", isSolved);
         values.put("user_player", userPlayer.name());
+        values.put("mate_in", mateIn);
         long result = db.insert("Levels", null, values);
         db.close();
         return result;
@@ -121,7 +131,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return levelDataList;
     }
 
-
     @SuppressLint("Range")
     public List<ChessPiece> getPiecesForLevel(int levelId) {
         List<ChessPiece> pieceDataList = new ArrayList<>();
@@ -153,60 +162,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This method is called when the database needs to be upgraded.
-        // You should handle any schema changes or data migrations here.
-        // For now, you can just drop and recreate the tables:
-
         db.execSQL("DROP TABLE IF EXISTS Levels");
         db.execSQL("DROP TABLE IF EXISTS LevelLayout");
         db.execSQL("DROP TABLE IF EXISTS ChessPieces");
         onCreate(db); // Recreate the tables with the new schema
     }
-
-    public ArrayList<ChessModel> getLevelDetails(long levelId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT Levels.level_id, level_name, is_solved, layout_id, rows, cols, `row`, col, color, piece_type " +
-                "FROM Levels " +
-                "JOIN LevelLayout ON Levels.level_id = LevelLayout.level_id " +
-                "JOIN ChessPieces ON Levels.level_id = ChessPieces.level_id " +
-                "WHERE Levels.level_id = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(levelId)});
-
-        ChessModel chessModel = null;
-        ArrayList<ChessModel> chessModels = new ArrayList<>();
-        ArrayList<ChessPiece> chessPieces = new ArrayList<>();
-
-        if (cursor != null && cursor.moveToFirst()) {
-            do{
-                String levelName = cursor.getString(0);
-                int isSolved = cursor.getInt(1);
-                int layoutId = cursor.getInt(2);
-                int rows = cursor.getInt(3);
-                int cols = cursor.getInt(4);
-                chessModel = new ChessModel(levelId, levelName, isSolved, layoutId, rows, cols);
-
-                do {
-                    int row = cursor.getInt(5);
-                    int col = cursor.getInt(6);
-                    ChessPieceType pieceType = ChessPieceType.valueOf(cursor.getString(7));
-                    ChessPiece piece = new ChessPiece(row, col, pieceType); // Assuming ChessPiece constructor
-                    chessPieces.add(piece);
-                    chessModel.addChessPiece(piece);
-                } while (cursor.moveToNext());
-
-//            chessModel = new ChessModel(levelId, levelName, isSolved, layoutId, rows, cols, chessPieces);
-//            ChessModel chessModel = new ChessModel(levelId, levelName, isSolved, layoutId, rows, cols);
-                chessModels.add(chessModel);
-            } while (cursor.moveToNext());
-        }
-
-        if (cursor != null) {
-            cursor.close();
-        }
-
-        return chessModels;
-    }
-
-
-
 }
 

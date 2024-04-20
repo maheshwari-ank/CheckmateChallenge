@@ -10,15 +10,12 @@ public class ChessPiece implements Serializable {
     private ChessPlayer player;
     private ChessPieceType pieceType;
     private int pieceId;
-
     public int getValue() {
         return value;
     }
-
     public void setValue(int value) {
         this.value = value;
     }
-
     private int levelId;
     private int value;
 
@@ -60,7 +57,6 @@ public class ChessPiece implements Serializable {
         return pieceType;
     }
 
-
     public void setPieceType(ChessPieceType pieceType) {
         this.pieceType = pieceType;
     }
@@ -94,10 +90,6 @@ public class ChessPiece implements Serializable {
         this.pieceType = pieceType;
         this.resId = resId;
     }
-
-//    public ChessPiece createPiece(int row, int col, ChessPlayer player, ChessPieceType pieceType, int resId) {
-//        return new ChessPiece(row, col, player, pieceType, resId);
-//    }
 
     // Copy constructor
     public ChessPiece(ChessPiece other) {

@@ -52,6 +52,7 @@ public class LevelsActivity extends AppCompatActivity {
         }
     }
 
+
     private CardView createCardView(ChessLevel level) {
         CardView cardView = new CardView(this);
 //        int cardWidth = getResources().getDisplayMetrics().widthPixels / 3;
@@ -103,13 +104,25 @@ public class LevelsActivity extends AppCompatActivity {
         }
 
         // Set click listener for the card
-        cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openMainActivityWithLevel(level);
-            }
-        });
+//        cardView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                openMainActivityWithLevel(level);
+//            }
+//        });
 
+        if (level.isSolved() || level.getLevelId() == dataManager.getUnsolvedLevelId()) {
+            // Level is solved or the first unsolved level, allow opening it
+            cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openMainActivityWithLevel(level);
+                }
+            });
+        } else {
+            // Level is locked, disable click listener
+            cardView.setClickable(false);
+        }
         return cardView;
     }
 
@@ -120,4 +133,6 @@ public class LevelsActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+
 }

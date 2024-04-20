@@ -8,13 +8,11 @@ public class Stack<E> implements Serializable {
     private static class Node<E> {
         E data;
         Node<E> next;
-
         Node(E data) {
             this.data = data;
             this.next = null;
         }
     }
-
     private Node<E> top;
     private int size;
 
