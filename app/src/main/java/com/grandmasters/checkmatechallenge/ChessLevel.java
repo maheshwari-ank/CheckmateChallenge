@@ -54,6 +54,14 @@ public class ChessLevel implements ChessDelegate, Serializable {
 
     Stack<ChessMove> moves = new Stack<>();
 
+    public Stack<ChessMove> getMoves() {
+        return moves;
+    }
+
+    public void setMoves(Stack<ChessMove> moves) {
+        this.moves = moves;
+    }
+
     public Graph getBoardGraph() {
         return boardGraph;
     }
@@ -528,7 +536,9 @@ public class ChessLevel implements ChessDelegate, Serializable {
                 bestScore = score;
                 bestMove = move;
             }
-
+            if (bestMove != null) {
+                return bestMove;
+            }
             if(bestMove == null) {
                 Random random = new Random();
                 int randomIndex = random.nextInt(possibleBlackMoves.size());

@@ -92,12 +92,12 @@ public class DataManager {
             dbHelper.insertChessPiece(9, 1, 0, "WHITE", "PAWN", R.drawable.pawn_white);
             dbHelper.insertChessPiece(9, 1, 1, "WHITE", "PAWN", R.drawable.pawn_white);
         }
-        if(dbHelper.insertLevel(10,4,4, false, ChessPlayer.WHITE,2)!=-1) {
-            dbHelper.insertChessPiece(10, 0, 2, "WHITE", "KING", R.drawable.king_white);
-            dbHelper.insertChessPiece(10, 0, 0, "WHITE", "QUEEN", R.drawable.rook_white);
-            dbHelper.insertChessPiece(10, 3, 1, "BLACK", "KING", R.drawable.king_black);
-            dbHelper.insertChessPiece(10, 1, 2, "WHITE", "PAWN", R.drawable.pawn_white);
-            dbHelper.insertChessPiece(10, 1, 1, "WHITE", "PAWN", R.drawable.pawn_white);
+        if(dbHelper.insertLevel(10,4,3, false, ChessPlayer.WHITE,2)!=-1) {
+            dbHelper.insertChessPiece(10, 0, 1, "WHITE", "QUEEN", R.drawable.queen_white);
+            dbHelper.insertChessPiece(10, 2, 0, "BLACK", "PAWN", R.drawable.pawn_black);
+            dbHelper.insertChessPiece(10, 3, 0, "BLACK", "KING", R.drawable.king_black);
+            dbHelper.insertChessPiece(10, 1, 0, "WHITE", "PAWN", R.drawable.pawn_white);
+            dbHelper.insertChessPiece(10, 1, 1, "BLACK", "BISHOP", R.drawable.bishop_black);
         }
     }
     private void loadLevelsFromDatabase() {

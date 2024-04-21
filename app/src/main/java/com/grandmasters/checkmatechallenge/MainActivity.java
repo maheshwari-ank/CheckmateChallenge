@@ -178,6 +178,7 @@
 
 package com.grandmasters.checkmatechallenge;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -188,6 +189,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.Serializable;
@@ -195,6 +197,7 @@ import java.util.HashSet;
 import java.util.Set;
 import android.content.Context;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ChessView.OnCheckmateListener, ChessView.OnStalemateListener, ChessView.OnMoveListener{
@@ -208,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
     private Set<ChessPiece> pieces = new HashSet<>();
     private DataManager dataManager;
     private Serializable key;
+    public int moves;
     private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -248,20 +252,27 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         else {
 //            currentlevel = dataManager.getChessLevel(2);
 //            chessView.setChessDelegate(currentlevel);
-            levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
-            levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            if (currentlevel != null) {
+                levelName.setText("Level " + String.valueOf(currentlevel.getLevelId()));
+                levelName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
 //            mate.setText("Level " + String.valueOf(currentlevel.getLevelId()));
-            mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
-            mate.setText("Mate in "+ String.valueOf(dbHelper.getMateInForLevel(currentlevel.getLevelId())));
+                mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+                mate.setText("Mate in " + String.valueOf(dbHelper.getMateInForLevel(currentlevel.getLevelId())));
 //            currentlevel.resetLevel();
-            chessView.setChessDelegate(currentlevel);
-            chessView.setCurrentLevel(currentlevel);
+                chessView.setChessDelegate(currentlevel);
+                chessView.setCurrentLevel(currentlevel);
+            }
+            else {
+                showGrandMasterMessage();
+            }
         }
+        moves = dbHelper.getMateInForLevel(currentlevel.getLevelId());
         findViewById(R.id.resetButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 currentlevel.resetLevel();
                 chessView.setChessDelegate(currentlevel);
+                moves = dbHelper.getMateInForLevel(currentlevel.getLevelId());
                 mate.setText("Mate in "+ String.valueOf(dbHelper.getMateInForLevel(currentlevel.getLevelId())));
                 chessView.resetMovesLeft(dbHelper.getMateInForLevel(currentlevel.getLevelId()));
                 chessView.invalidate();
@@ -271,11 +282,25 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         findViewById(R.id.undoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentlevel.undoLastMove();
-                chessView.setChessDelegate(currentlevel);
-                chessView.invalidate();
+                // Check if the current level exists and is not null
+                if (currentlevel != null) {
+                    // Check if the number of moves is even or odd
+                    if (currentlevel.getMoves().size() % 2 == 0) {
+                        // If the number of moves is even, pop twice
+                        currentlevel.undoLastMove();
+                        currentlevel.undoLastMove();
+                    } else {
+                        // If the number of moves is odd, pop once
+                        currentlevel.undoLastMove();
+                    }
+                    moves ++;
+                    mate.setText("Mate in "+ String.valueOf(moves));
+                    chessView.setChessDelegate(currentlevel);
+                    chessView.invalidate();
+                }
             }
         });
+
 
         findViewById(R.id.levels_btn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         // Start a new activity to display the levels
         Intent intent = new Intent(MainActivity.this, LevelsActivity.class);
         startActivity(intent);
-        finish();
     }
 
     // Implement the onCheckmate method of the OnCheckmateListener interface
@@ -334,9 +358,7 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
             ChessLevel nextLevel = dataManager.getChessLevel(nextLevelIndex);
             startNextLevel(nextLevel);
         } else {
-            // If there are no more levels available, do something (e.g., display a message)
-            // For now, let's just log a message
-            Log.d(TAG, "No more levels available");
+            showGrandMasterMessage();
         }
     }
 
@@ -358,7 +380,8 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
 
     @Override
     public void onMove(int movesLeft) {
-        if(movesLeft == 0) {
+        moves --;
+        if(moves == 0) {
             TextView mate = findViewById(R.id.mate);
             mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             mate.setText("0 moves left");
@@ -366,7 +389,13 @@ public class MainActivity extends AppCompatActivity implements ChessView.OnCheck
         else {
             TextView mate = findViewById(R.id.mate);
             mate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
-            mate.setText("Mate in "+ String.valueOf(movesLeft));
+            mate.setText("Mate in "+ String.valueOf(moves));
         }
+    }
+
+    private void showGrandMasterMessage() {
+        Intent intent = new Intent(MainActivity.this, GrandMastersActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

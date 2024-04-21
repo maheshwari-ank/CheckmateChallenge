@@ -1,10 +1,12 @@
 package com.grandmasters.checkmatechallenge;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,7 +26,6 @@ public class LevelsActivity extends AppCompatActivity {
 //        dataManager = new DataManager(getApplicationContext());
         dataManager = DataManagerSingleton.getInstance(getApplicationContext());
         levelsGrid = findViewById(R.id.levels_grid);
-
         // Fetch levels from the database, assuming you have a method to do so
         CustomList<ChessLevel> levels = dataManager.getAllLevels();
 
@@ -44,6 +45,17 @@ public class LevelsActivity extends AppCompatActivity {
             levelsGrid.addView(cardView);
             columnCount++;
         }
+
+
+        Button backArrow = findViewById(R.id.back_arrow);
+        backArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Finish the current activity
+                finish();
+            }
+        });
+
 
     }
 
@@ -96,14 +108,6 @@ public class LevelsActivity extends AppCompatActivity {
             cardView.addView(textView);
         }
 
-        // Set click listener for the card
-//        cardView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                openMainActivityWithLevel(level);
-//            }
-//        });
-
         if (level.isSolved() || level.getLevelId() == dataManager.getUnsolvedLevelId()) {
             // Level is solved or the first unsolved level, allow opening it
             cardView.setOnClickListener(new View.OnClickListener() {
@@ -126,6 +130,5 @@ public class LevelsActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-
 
 }

@@ -478,15 +478,6 @@ public class ChessView extends View{
             Square toSquare = new Square(randomMove.getToCol(), randomMove.getToRow());
             chessDelegate.movePiece(fromSquare, toSquare);
 
-//            // Check for checkmate
-//            if (kingInCheck(toSquare)) {
-//                Log.d(TAG, "King in Check!");
-//                if (checkMate(toSquare)) {
-//                    Log.d(TAG, "Checkmate!");
-//                    checkmateListener.onCheckmate();
-//                }
-//            }
-
             // Update turn flags
             userTurn = true;
             opponentTurn = false;
