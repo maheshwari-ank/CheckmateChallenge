@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-
+        android:noHistory="false"
         android:allowBackup="true"
         android:requestLegacyExternalStorage="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -24,6 +24,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".LevelsActivity">
+            <!-- Add any additional configuration for your activity here -->
+        </activity>
+        <activity android:name=".GrandMastersActivity">
             <!-- Add any additional configuration for your activity here -->
         </activity>
     </application>

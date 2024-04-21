@@ -88,4 +88,11 @@ public interface ChessDelegate {
      * @param piecesBoxOriginalState The original state of the pieces box to set.
      */
     void setPiecesBoxOriginalState(Set<ChessPiece> piecesBoxOriginalState);
+
+    /**
+     * Retrieves the stack of chess moves made during the game.
+     *
+     * @return The stack of chess moves made during the game.
+     */
+    Stack<ChessMove> getMoves();
 }
